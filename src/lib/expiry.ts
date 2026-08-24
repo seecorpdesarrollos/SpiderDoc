@@ -4,10 +4,10 @@ export type ExpiryStatus = {
   level: ExpiryLevel;
   daysRemaining: number;
   label: string;
-  /** Clases Tailwind para el punto/píldora del semáforo. */
-  dot: string;
+  /** Clases Tailwind para la píldora y la barra del semáforo. */
   pill: string;
   bar: string;
+  dot: string;
 };
 
 /** Diferencia en días naturales entre hoy y la fecha de caducidad (UTC, sin horas). */
@@ -23,9 +23,18 @@ export function daysUntil(expiryDate: string, now: Date = new Date()): number {
  *   Rojo    -> caducado o < 30 días
  *   Amarillo-> 30 a 90 días
  *   Verde   -> > 90 días
+ *
+ * Los colores son los de la paleta de estado de Supabase, no los rojos y
+ * ámbares por defecto de Tailwind: mantienen la cohesión con el resto.
  */
 export function getExpiryStatus(expiryDate: string, now: Date = new Date()): ExpiryStatus {
   const daysRemaining = daysUntil(expiryDate, now);
+
+  const danger = {
+    pill: "border-destructive/30 bg-destructive/10 text-destructive",
+    bar: "bg-destructive-dim",
+    dot: "bg-destructive",
+  };
 
   if (daysRemaining < 0) {
     return {
@@ -35,9 +44,7 @@ export function getExpiryStatus(expiryDate: string, now: Date = new Date()): Exp
         daysRemaining === -1
           ? "Caducó ayer"
           : `Caducó hace ${Math.abs(daysRemaining)} días`,
-      dot: "bg-red-500",
-      pill: "bg-red-500/15 text-red-300 border-red-500/40",
-      bar: "bg-red-500",
+      ...danger,
     };
   }
 
@@ -51,9 +58,7 @@ export function getExpiryStatus(expiryDate: string, now: Date = new Date()): Exp
           : daysRemaining === 1
             ? "Caduca mañana"
             : `Caduca en ${daysRemaining} días`,
-      dot: "bg-red-500",
-      pill: "bg-red-500/15 text-red-300 border-red-500/40",
-      bar: "bg-red-500",
+      ...danger,
     };
   }
 
@@ -62,9 +67,9 @@ export function getExpiryStatus(expiryDate: string, now: Date = new Date()): Exp
       level: "warning",
       daysRemaining,
       label: `Caduca en ${daysRemaining} días`,
-      dot: "bg-amber-400",
-      pill: "bg-amber-400/15 text-amber-200 border-amber-400/40",
-      bar: "bg-amber-400",
+      pill: "border-warning/30 bg-warning/10 text-warning",
+      bar: "bg-warning-dim",
+      dot: "bg-warning",
     };
   }
 
@@ -72,9 +77,9 @@ export function getExpiryStatus(expiryDate: string, now: Date = new Date()): Exp
     level: "ok",
     daysRemaining,
     label: `Caduca en ${daysRemaining} días`,
-    dot: "bg-emerald-400",
-    pill: "bg-emerald-400/15 text-emerald-200 border-emerald-400/40",
-    bar: "bg-emerald-400",
+    pill: "border-brand/30 bg-brand/10 text-brand-600",
+    bar: "bg-brand-500",
+    dot: "bg-brand",
   };
 }
 

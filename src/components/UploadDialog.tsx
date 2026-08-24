@@ -65,14 +65,11 @@ export function UploadDialog({
       if (body.expiry_date) {
         setExpiry(body.expiry_date);
         if (body.confidence && body.confidence !== "high") {
-          setScanNote(
-            "Revisá la fecha: la lectura no fue del todo nítida.",
-          );
+          setScanNote("Revisá la fecha: la lectura no fue del todo nítida.");
         }
       } else {
         setScanNote(
-          body.error ??
-            "No pudimos leer la fecha. Escribila a mano y listo.",
+          body.error ?? "No pudimos leer la fecha. Escribila a mano y listo.",
         );
       }
 
@@ -128,141 +125,148 @@ export function UploadDialog({
   const status = expiry ? getExpiryStatus(expiry) : null;
 
   return (
-    <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/70 p-0 backdrop-blur-sm sm:items-center sm:p-6">
-      <div className="max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-t-2xl border border-line bg-surface p-6 sm:rounded-card">
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="label-track text-rust">Nuevo documento</p>
-            <div className="rule-accent mt-2.5 w-10" />
-          </div>
+    <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center sm:p-6">
+      <div className="card-surface max-h-[92dvh] w-full max-w-md overflow-y-auto rounded-b-none sm:rounded-lg">
+        <div className="hairline-b flex items-center justify-between px-4 py-3">
+          <p className="heading-meta text-fg-lighter">Nuevo documento</p>
           <button
             onClick={onClose}
-            className="text-2xl leading-none text-muted transition hover:text-bone"
+            className="focus-ring rounded px-1 text-lg leading-none text-fg-lighter transition-colors hover:text-foreground"
             aria-label="Cerrar"
           >
             ×
           </button>
         </div>
 
-        {step === "pick" && (
-          <div className="mt-7">
-            <button
-              type="button"
-              onClick={() => inputRef.current?.click()}
-              className="w-full rounded-card border border-dashed border-line bg-surface-2 px-6 py-12 text-center transition hover:border-rust"
-            >
-              <p className="text-lg font-semibold">Elegí una foto o PDF</p>
-              <p className="mt-2 text-sm text-muted">
-                JPG, PNG, WEBP o PDF. Hasta 8 MB.
-              </p>
-            </button>
-
-            <p className="mt-5 text-center text-xs leading-relaxed text-muted">
-              Leemos la fecha de caducidad automáticamente. Vos la confirmás
-              antes de guardar.
-            </p>
-
-            <button
-              type="button"
-              onClick={() => {
-                setStep("review");
-                setScanNote("Alta manual: escribí los datos del documento.");
-              }}
-              className="mt-4 w-full text-center text-sm text-muted underline underline-offset-4 transition hover:text-bone"
-            >
-              Prefiero escribirlo a mano
-            </button>
-          </div>
-        )}
-
-        {step === "scanning" && (
-          <div className="mt-10 flex flex-col items-center py-10 text-center">
-            <div className="h-10 w-10 animate-spin rounded-full border-2 border-line border-t-rust" />
-            <p className="mt-6 font-semibold">Leyendo el documento…</p>
-            <p className="mt-2 text-sm text-muted">
-              Buscando la fecha de caducidad. Tarda unos segundos.
-            </p>
-          </div>
-        )}
-
-        {(step === "review" || step === "saving") && (
-          <div className="mt-7 space-y-5">
-            {preview && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={preview}
-                alt="Vista previa del documento"
-                className="max-h-44 w-full rounded-lg border border-line object-contain bg-surface-2"
-              />
-            )}
-
-            {scanNote && (
-              <p className="rounded-lg border border-amber-400/40 bg-amber-400/10 px-4 py-3 text-sm text-amber-200">
-                {scanNote}
-              </p>
-            )}
-
-            <label className="block">
-              <span className="label-track text-muted">Nombre</span>
-              <input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="DNI de Diego"
-                className="mt-2 w-full rounded-lg border border-line bg-surface-2 px-4 py-3 text-bone outline-none focus:border-rust"
-              />
-            </label>
-
-            <label className="block">
-              <span className="label-track text-muted">Tipo</span>
-              <select
-                value={docType}
-                onChange={(e) => setDocType(e.target.value)}
-                className="mt-2 w-full rounded-lg border border-line bg-surface-2 px-4 py-3 text-bone outline-none focus:border-rust"
-              >
-                {DOCUMENT_TYPES.map((t) => (
-                  <option key={t.value} value={t.value}>
-                    {t.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="block">
-              <span className="label-track text-rust">Fecha de caducidad</span>
-              <input
-                type="date"
-                value={expiry}
-                onChange={(e) => setExpiry(e.target.value)}
-                className="mt-2 w-full rounded-lg border border-line bg-surface-2 px-4 py-3 text-bone outline-none focus:border-rust"
-              />
-              {status && (
-                <span
-                  className={`mt-2 inline-block rounded-full border px-3 py-1 text-xs font-semibold ${status.pill}`}
-                >
-                  {formatExpiryDate(expiry)} · {status.label}
-                </span>
-              )}
-            </label>
-
-            {error && <p className="text-sm text-red-300">{error}</p>}
-
-            <div className="flex gap-3 pt-1">
+        <div className="p-4">
+          {step === "pick" && (
+            <>
               <button
-                onClick={handleSave}
-                disabled={step === "saving" || !expiry}
-                className="label-track flex-1 rounded-full bg-rust px-6 py-3.5 text-bone transition hover:bg-rust-soft disabled:cursor-not-allowed disabled:opacity-50"
+                type="button"
+                onClick={() => inputRef.current?.click()}
+                className="focus-ring w-full rounded-lg border border-dashed px-6 py-12 text-center transition-colors hover:border-brand"
+                style={{ borderColor: "var(--border-control)" }}
               >
-                {step === "saving" ? "Guardando…" : "Guardar documento"}
+                <p className="font-heading text-base font-semibold text-foreground">
+                  Elegí una foto o PDF
+                </p>
+                <p className="mt-1.5 text-sm text-fg-light">
+                  JPG, PNG, WEBP o PDF. Hasta 8 MB.
+                </p>
               </button>
+
+              <p className="mt-4 text-center text-xs leading-relaxed text-fg-lighter">
+                Leemos la fecha de caducidad automáticamente. Vos la confirmás
+                antes de guardar.
+              </p>
+
               <button
-                onClick={onClose}
-                className="label-track rounded-full border border-line px-6 py-3.5 text-muted transition hover:text-bone"
+                type="button"
+                onClick={() => {
+                  setStep("review");
+                  setScanNote("Alta manual: escribí los datos del documento.");
+                }}
+                className="focus-ring mt-3 w-full rounded text-center text-sm text-fg-lighter underline underline-offset-4 transition-colors hover:text-foreground"
               >
-                Cancelar
+                Prefiero escribirlo a mano
               </button>
+            </>
+          )}
+
+          {step === "scanning" && (
+            <div className="flex flex-col items-center py-14 text-center">
+              <div
+                className="h-8 w-8 animate-spin rounded-full border-2 border-t-brand"
+                style={{ borderColor: "var(--border-control)", borderTopColor: "var(--color-brand)" }}
+              />
+              <p className="mt-5 font-heading text-base font-semibold text-foreground">
+                Leyendo el documento…
+              </p>
+              <p className="mt-1.5 text-sm text-fg-light">
+                Buscando la fecha de caducidad. Tarda unos segundos.
+              </p>
             </div>
-          </div>
-        )}
+          )}
+
+          {(step === "review" || step === "saving") && (
+            <div className="space-y-4">
+              {preview && (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={preview}
+                  alt="Vista previa del documento"
+                  className="hairline max-h-40 w-full rounded-md object-contain"
+                  style={{ backgroundColor: "var(--field)" }}
+                />
+              )}
+
+              {scanNote && (
+                <p className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2.5 text-sm text-warning">
+                  {scanNote}
+                </p>
+              )}
+
+              <label className="block">
+                <span className="heading-meta text-fg-lighter">Nombre</span>
+                <input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="DNI de Diego"
+                  className="input-field mt-1.5"
+                />
+              </label>
+
+              <label className="block">
+                <span className="heading-meta text-fg-lighter">Tipo</span>
+                <select
+                  value={docType}
+                  onChange={(e) => setDocType(e.target.value)}
+                  className="input-field mt-1.5"
+                >
+                  {DOCUMENT_TYPES.map((t) => (
+                    <option key={t.value} value={t.value}>
+                      {t.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="block">
+                <span className="heading-meta text-brand">
+                  Fecha de caducidad
+                </span>
+                <input
+                  type="date"
+                  value={expiry}
+                  onChange={(e) => setExpiry(e.target.value)}
+                  className="input-field mt-1.5"
+                />
+                {status && (
+                  <span
+                    className={`mt-2 inline-block rounded-md border px-2 py-1 text-xs font-medium ${status.pill}`}
+                  >
+                    {formatExpiryDate(expiry)} · {status.label}
+                  </span>
+                )}
+              </label>
+
+              {error && <p className="text-sm text-destructive">{error}</p>}
+
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={handleSave}
+                  disabled={step === "saving" || !expiry}
+                  className="btn-primary flex-1 px-4 py-2 text-sm"
+                >
+                  {step === "saving" ? "Guardando…" : "Guardar documento"}
+                </button>
+                <button onClick={onClose} className="btn-default px-4 py-2 text-sm">
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
 
         <input
           ref={inputRef}

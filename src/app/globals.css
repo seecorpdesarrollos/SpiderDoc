@@ -1,50 +1,247 @@
 @import "tailwindcss";
 
+/* ===========================================================================
+ * Spiderjad Docs — estilo Supabase
+ * Tokens verificados contra el repo de Supabase. Ver la skill supabase-style.
+ *
+ * Dos registros: el producto (dashboard, login) usa las superficies claras
+ * de la escala; la landing usa las de marketing, bastante más oscuras.
+ * =========================================================================== */
+
 @theme {
-  --color-ink: #12100e;
-  --color-surface: #191614;
-  --color-surface-2: #221e1b;
-  --color-line: #332d28;
-  --color-bone: #f4f1ed;
-  --color-muted: #a09589;
-  --color-rust: #b8470e;
-  --color-rust-soft: #d9631f;
+  /* --- Superficies (producto) ------------------------------------------- */
+  --color-background: #151816;
+  --color-card: #1c1f1d;
+  --color-popover: #1f2321;
+  --color-secondary: #232724;
+  --color-subtle: #252826;
+  --color-accent: #292c2a;
 
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
+  /* --- Texto ------------------------------------------------------------- */
+  --color-foreground: #f1f7f3;
+  --color-fg-light: #acb1ae;
+  --color-fg-lighter: #7d827f;
+  --color-fg-muted: #5c605e;
 
-  --radius-card: 0.75rem;
+  /* --- Marca ------------------------------------------------------------- */
+  --color-brand: #3ecf8e;
+  --color-brand-300: #002918;
+  --color-brand-400: #00311d;
+  --color-brand-500: #006239;
+  --color-brand-600: #85e0ba;
+
+  /* --- Estado (paleta de Supabase, no la de Tailwind) -------------------- */
+  --color-warning: #f2af48;
+  --color-warning-dim: #db8e00;
+  --color-destructive: #fa8880;
+  --color-destructive-dim: #e54d2e;
+
+  /* --- Tipografía -------------------------------------------------------- */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-source-code-pro), Menlo, ui-monospace, monospace;
+
+  /* Escala un escalón por debajo de Tailwind. Sin esto se pierde la densidad
+     que hace que la interfaz se sienta una herramienta y no una landing. */
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.9375rem;
+  --text-lg: 1rem;
+  --text-xl: 1.125rem;
+  --text-2xl: 1.375rem;
+  --text-3xl: 1.75rem;
+  --text-4xl: 2.125rem;
+  --text-5xl: 2.875rem;
+  --text-6xl: 3.625rem;
+
+  --radius-md: 6px;
+  --radius-lg: 8px;
 }
 
+/* Los bordes son alpha sobre el foreground, no colores sólidos: funcionan
+   igual sobre cualquier superficie. 7,5 % es mucho más sutil de lo que
+   parece necesario, y es exactamente el punto. */
 :root {
+  --border: rgba(241, 247, 243, 0.075);
+  --border-control: rgba(241, 247, 243, 0.135);
+  --border-hover: rgba(241, 247, 243, 0.28);
+  --field: rgba(0, 0, 0, 0.12);
+  --ring: rgba(62, 207, 142, 0.55);
   color-scheme: dark;
 }
 
-html,
-body {
-  background-color: var(--color-ink);
-  color: var(--color-bone);
-  -webkit-font-smoothing: antialiased;
+/* Registro de marketing: superficies más oscuras para la landing. */
+.marketing {
+  --color-background: #0a0e0c;
+  --color-card: #111613;
+  --color-popover: #151917;
+  --color-secondary: #191d1a;
+  --color-subtle: #1a1f1c;
+  --color-accent: #1f2421;
+  background-color: #0a0e0c;
 }
 
-/* Etiqueta industrial: mayúsculas con tracking generoso. */
-.label-track {
+@layer base {
+  html,
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    /* 450, no 400. Inter a este peso se lee un punto más sólido. */
+    font-weight: 450;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading);
+  }
+  h1 {
+    font-weight: 500;
+  }
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: 600;
+  }
+
+  ::placeholder {
+    color: var(--color-fg-muted);
+  }
+}
+
+/* --- Utilidades de firma -------------------------------------------------- */
+
+/* La marca tipográfica de Supabase: mono, 12px, mayúsculas, tracking abierto.
+   Va en títulos de tarjeta y cabeceras de sección. */
+@utility heading-meta {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
-  font-size: 0.6875rem;
-  font-weight: 700;
+  letter-spacing: 0.05em;
 }
 
-.rule-thick {
-  border-bottom: 3px solid var(--color-bone);
+/* Anillo verde solo en :focus-visible — que aparezca al clickear con el mouse
+   se siente barato y no es lo que hace Supabase. */
+@utility focus-ring {
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
 }
 
-.rule-accent {
-  border-bottom: 3px solid var(--color-rust);
+@utility hairline {
+  border: 1px solid var(--border);
 }
 
-input,
-select,
-textarea {
-  color-scheme: dark;
+@utility hairline-b {
+  border-bottom: 1px solid var(--border);
+}
+
+@utility hairline-t {
+  border-top: 1px solid var(--border);
+}
+
+/* --- Componentes ---------------------------------------------------------- */
+
+/* El primario es verde PROFUNDO con texto claro, no verde brillante con texto
+   negro. Es el error que más delata una imitación de Supabase. */
+@utility btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(62, 207, 142, 0.3);
+  background-color: var(--color-brand-500);
+  color: var(--color-foreground);
+  transition: all 200ms ease-out;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background-color: rgba(62, 207, 142, 0.5);
+    border-color: var(--color-brand);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+@utility btn-default {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-control);
+  background-color: var(--color-card);
+  color: var(--color-foreground);
+  transition: all 200ms ease-out;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-popover);
+    border-color: var(--border-hover);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+/* El input va hundido: más oscuro que el fondo, no más claro. */
+@utility input-field {
+  width: 100%;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-control);
+  background-color: var(--field);
+  padding: 0.5rem 0.75rem;
+  font-size: var(--text-sm);
+  color: var(--color-foreground);
+  transition: border-color 200ms ease-out;
+
+  &:hover,
+  &:focus {
+    border-color: var(--border-hover);
+  }
+  &:focus {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+@utility card-surface {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background-color: var(--color-card);
+  overflow: hidden;
+}
+
+/* El glow de Supabase nunca es verde puro: siempre lleva un segundo tono frío
+   y va muy desenfocado. Solo en la landing — el dashboard no lleva ninguno. */
+@utility hero-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 50% -20%,
+    rgba(62, 207, 142, 0.16) 0%,
+    rgba(60, 103, 227, 0.1) 30%,
+    transparent 62%
+  );
 }

@@ -48,25 +48,24 @@ export function DocumentCard({
   }
 
   return (
-    <li className="overflow-hidden rounded-card border border-line bg-surface">
+    <li className="card-surface">
       <div className="flex">
-        {/* Barra del semáforo */}
-        <div className={`w-1.5 shrink-0 ${status.bar}`} aria-hidden />
+        <div className={`w-0.5 shrink-0 ${status.bar}`} aria-hidden />
 
-        <div className="flex-1 p-5">
+        <div className="flex-1 p-4">
           {editing ? (
             <div className="space-y-3">
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full rounded-lg border border-line bg-surface-2 px-3 py-2 text-bone outline-none focus:border-rust"
+                className="input-field"
                 placeholder="Nombre del documento"
               />
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-2">
                 <select
                   value={docType}
                   onChange={(e) => setDocType(e.target.value)}
-                  className="rounded-lg border border-line bg-surface-2 px-3 py-2 text-sm text-bone outline-none focus:border-rust"
+                  className="input-field w-auto"
                 >
                   {DOCUMENT_TYPES.map((t) => (
                     <option key={t.value} value={t.value}>
@@ -78,15 +77,15 @@ export function DocumentCard({
                   type="date"
                   value={expiry}
                   onChange={(e) => setExpiry(e.target.value)}
-                  className="rounded-lg border border-line bg-surface-2 px-3 py-2 text-sm text-bone outline-none focus:border-rust"
+                  className="input-field w-auto"
                 />
               </div>
-              {error && <p className="text-sm text-red-300">{error}</p>}
+              {error && <p className="text-sm text-destructive">{error}</p>}
               <div className="flex gap-2">
                 <button
                   onClick={save}
                   disabled={saving}
-                  className="label-track rounded-full bg-rust px-5 py-2 text-bone transition hover:bg-rust-soft disabled:opacity-50"
+                  className="btn-primary px-3 py-1.5 text-xs"
                 >
                   {saving ? "Guardando…" : "Guardar"}
                 </button>
@@ -98,7 +97,7 @@ export function DocumentCard({
                     setDocType(document.document_type);
                     setError(null);
                   }}
-                  className="label-track rounded-full border border-line px-5 py-2 text-muted transition hover:text-bone"
+                  className="btn-default px-3 py-1.5 text-xs"
                 >
                   Cancelar
                 </button>
@@ -108,53 +107,53 @@ export function DocumentCard({
             <>
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="label-track text-muted">
+                  <p className="heading-meta text-fg-lighter">
                     {documentTypeLabel(document.document_type)}
                   </p>
-                  <h3 className="mt-1.5 truncate text-lg font-semibold">
+                  <h3 className="mt-1.5 truncate font-heading text-base font-semibold text-foreground">
                     {document.title}
                   </h3>
-                  <p className="mt-1 text-sm text-muted">
+                  <p className="mt-0.5 text-sm text-fg-light">
                     {formatExpiryDate(document.expiry_date)}
                   </p>
                 </div>
 
                 <span
-                  className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold whitespace-nowrap ${status.pill}`}
+                  className={`shrink-0 rounded-md border px-2 py-1 text-xs font-medium whitespace-nowrap ${status.pill}`}
                 >
                   {status.label}
                 </span>
               </div>
 
-              <div className="mt-4 flex flex-wrap items-center gap-4 text-xs">
+              <div className="mt-3 flex flex-wrap items-center gap-3 text-xs">
                 {document.signed_url && (
                   <a
                     href={document.signed_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-rust-soft underline underline-offset-4"
+                    className="focus-ring rounded text-brand-600 underline underline-offset-4"
                   >
                     Ver archivo
                   </a>
                 )}
                 <button
                   onClick={() => setEditing(true)}
-                  className="text-muted underline underline-offset-4 transition hover:text-bone"
+                  className="focus-ring rounded text-fg-lighter underline underline-offset-4 transition-colors hover:text-foreground"
                 >
                   Editar
                 </button>
                 {confirmingDelete ? (
-                  <span className="flex items-center gap-3">
-                    <span className="text-muted">¿Seguro?</span>
+                  <span className="flex items-center gap-2.5">
+                    <span className="text-fg-lighter">¿Seguro?</span>
                     <button
                       onClick={onDelete}
-                      className="font-semibold text-red-400 underline underline-offset-4"
+                      className="focus-ring rounded font-medium text-destructive underline underline-offset-4"
                     >
                       Sí, borrar
                     </button>
                     <button
                       onClick={() => setConfirmingDelete(false)}
-                      className="text-muted underline underline-offset-4"
+                      className="focus-ring rounded text-fg-lighter underline underline-offset-4"
                     >
                       No
                     </button>
@@ -162,7 +161,7 @@ export function DocumentCard({
                 ) : (
                   <button
                     onClick={() => setConfirmingDelete(true)}
-                    className="text-muted underline underline-offset-4 transition hover:text-red-400"
+                    className="focus-ring rounded text-fg-lighter underline underline-offset-4 transition-colors hover:text-destructive"
                   >
                     Borrar
                   </button>

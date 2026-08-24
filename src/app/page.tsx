@@ -12,77 +12,78 @@ export default async function LandingPage() {
   if (user) redirect("/dashboard");
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-5xl flex-col px-6 py-10">
-      <header className="flex items-center justify-between">
-        <Wordmark />
-        <Link
-          href="/login"
-          className="label-track rounded-full border border-line px-5 py-2.5 text-bone transition hover:border-rust hover:text-rust-soft"
-        >
-          Entrar
-        </Link>
-      </header>
+    <main className="marketing relative min-h-dvh overflow-hidden">
+      <div className="hero-glow" aria-hidden />
 
-      <section className="flex flex-1 flex-col justify-center py-16">
-        <p className="label-track text-rust">Control de caducidades</p>
-        <div className="rule-accent mt-3 mb-8 w-16" />
-
-        <h1 className="max-w-3xl text-5xl leading-[1.05] font-bold tracking-tight sm:text-7xl">
-          Tus documentos,
-          <br />
-          <span className="text-rust">siempre en vigor.</span>
-        </h1>
-
-        <p className="mt-8 max-w-xl text-lg text-muted">
-          Sacá una foto del DNI, el pasaporte o el carnet. Leemos la fecha de
-          caducidad automáticamente y te avisamos antes de que sea un problema.
-        </p>
-
-        <div className="mt-10 flex flex-wrap items-center gap-4">
-          <Link
-            href="/login"
-            className="label-track rounded-full bg-rust px-8 py-4 text-bone transition hover:bg-rust-soft"
-          >
-            Empezar gratis
+      <div className="relative mx-auto flex min-h-dvh max-w-5xl flex-col px-6 py-8">
+        <header className="flex items-center justify-between">
+          <Wordmark />
+          <Link href="/login" className="btn-default focus-ring px-3 py-2 text-sm">
+            Entrar
           </Link>
-          <span className="text-sm text-muted">
-            5 documentos gratis. Sin tarjeta.
-          </span>
-        </div>
-      </section>
+        </header>
 
-      <section className="grid gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-3">
-        {[
-          {
-            n: "01",
-            title: "Subís la foto",
-            body: "Imagen o PDF del documento. Se guarda cifrado y privado, solo vos lo ves.",
-          },
-          {
-            n: "02",
-            title: "Leemos la fecha",
-            body: "El OCR extrae la fecha de caducidad. Si algo no queda claro, la corregís vos.",
-          },
-          {
-            n: "03",
-            title: "Te avisamos",
-            body: "Semáforo por documento y aviso antes de que caduque. Sin sustos.",
-          },
-        ].map((step) => (
-          <div key={step.n} className="bg-surface p-7">
-            <p className="label-track text-rust">{step.n}</p>
-            <h2 className="mt-4 text-lg font-semibold">{step.title}</h2>
-            <p className="mt-2 text-sm leading-relaxed text-muted">{step.body}</p>
+        <section className="flex flex-1 flex-col justify-center py-20">
+          <p className="heading-meta text-brand">Control de caducidades</p>
+
+          <h1 className="mt-6 max-w-3xl font-heading text-4xl leading-[1.1] font-medium tracking-tight text-foreground sm:text-6xl">
+            Tus documentos,
+            <br />
+            <span className="text-brand">siempre en vigor.</span>
+          </h1>
+
+          <p className="mt-6 max-w-xl text-base leading-relaxed text-fg-light">
+            Sacá una foto del DNI, el pasaporte o el carnet. Leemos la fecha de
+            caducidad automáticamente y te avisamos antes de que sea un problema.
+          </p>
+
+          <div className="mt-10 flex flex-wrap items-center gap-4">
+            <Link href="/login" className="btn-primary px-4 py-2 text-sm">
+              Empezar gratis
+            </Link>
+            <span className="text-sm text-fg-lighter">
+              5 documentos gratis. Sin tarjeta.
+            </span>
           </div>
-        ))}
-      </section>
+        </section>
 
-      <footer className="mt-12 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-6">
-        <p className="label-track text-muted">Spiderjad</p>
-        <p className="text-xs text-muted">
-          Un producto de Spiderjad SL · {new Date().getFullYear()}
-        </p>
-      </footer>
+        <section className="grid gap-4 sm:grid-cols-3">
+          {[
+            {
+              n: "01",
+              title: "Subís la foto",
+              body: "Imagen o PDF del documento. Se guarda privado, en un bucket cifrado que solo vos podés abrir.",
+            },
+            {
+              n: "02",
+              title: "Leemos la fecha",
+              body: "El OCR extrae la fecha de caducidad. Si algo no queda claro, la corregís antes de guardar.",
+            },
+            {
+              n: "03",
+              title: "Te avisamos",
+              body: "Semáforo por documento y aviso antes de que caduque. Sin sustos en la ventanilla.",
+            },
+          ].map((step) => (
+            <div key={step.n} className="card-surface p-5">
+              <p className="heading-meta text-brand">{step.n}</p>
+              <h2 className="mt-3 font-heading text-base font-semibold text-foreground">
+                {step.title}
+              </h2>
+              <p className="mt-2 text-sm leading-relaxed text-fg-light">
+                {step.body}
+              </p>
+            </div>
+          ))}
+        </section>
+
+        <footer className="hairline-t mt-12 flex flex-wrap items-center justify-between gap-3 pt-6">
+          <Wordmark compact />
+          <p className="text-xs text-fg-lighter">
+            Un producto de Spiderjad SL · {new Date().getFullYear()}
+          </p>
+        </footer>
+      </div>
     </main>
   );
 }

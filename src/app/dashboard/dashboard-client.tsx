@@ -58,77 +58,79 @@ export function DashboardClient({
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-8 pb-28">
-      <header className="flex flex-wrap items-center justify-between gap-4">
-        <Wordmark />
-        <div className="flex items-center gap-4">
-          <span className="hidden text-xs text-muted sm:inline">{email}</span>
-          <form action="/auth/signout" method="post">
-            <button
-              type="submit"
-              className="label-track rounded-full border border-line px-4 py-2 text-muted transition hover:border-rust hover:text-rust-soft"
-            >
-              Salir
-            </button>
-          </form>
+    <div className="min-h-dvh">
+      <header className="hairline-b sticky top-0 z-20 bg-background/90 backdrop-blur">
+        <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-3">
+          <Wordmark />
+          <div className="flex items-center gap-3">
+            <span className="hidden text-xs text-fg-lighter sm:inline">
+              {email}
+            </span>
+            <form action="/auth/signout" method="post">
+              <button type="submit" className="btn-default px-2.5 py-1 text-xs">
+                Salir
+              </button>
+            </form>
+          </div>
         </div>
       </header>
 
-      <section className="mt-12">
-        <p className="label-track text-rust">Tus documentos</p>
-        <div className="rule-thick mt-3 mb-6 w-full" />
-
-        <div className="flex flex-wrap items-end justify-between gap-6">
-          <div>
-            <p className="text-5xl font-bold tracking-tight">
-              {used}
-              <span className="text-2xl text-muted">/{limit}</span>
-            </p>
-            <p className="mt-2 text-sm text-muted">
-              {atLimit
-                ? "Plan gratuito completo."
-                : `Te quedan ${limit - used} en el plan gratuito.`}
-            </p>
+      <div className="mx-auto max-w-3xl px-6 py-8 pb-28">
+        <section className="card-surface">
+          <div className="hairline-b flex flex-wrap items-center justify-between gap-4 px-4 py-3">
+            <p className="heading-meta text-fg-lighter">Tus documentos</p>
+            <div className="flex items-center gap-4 text-xs">
+              <Stat value={summary.red} label="Urgentes" tone="text-destructive" />
+              <Stat value={summary.amber} label="Próximos" tone="text-warning" />
+            </div>
           </div>
 
-          <div className="flex gap-6">
-            <Stat value={summary.red} label="Urgentes" tone="text-red-400" />
-            <Stat value={summary.amber} label="Próximos" tone="text-amber-300" />
+          <div className="flex flex-wrap items-end justify-between gap-4 p-4">
+            <div>
+              <p className="font-heading text-3xl font-medium tabular-nums text-foreground">
+                {used}
+                <span className="text-xl text-fg-lighter">/{limit}</span>
+              </p>
+              <p className="mt-1 text-sm text-fg-light">
+                {atLimit
+                  ? "Plan gratuito completo."
+                  : `Te quedan ${limit - used} en el plan gratuito.`}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleAdd}
+              className="btn-primary px-3 py-1.5 text-xs"
+            >
+              + Añadir documento
+            </button>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {loadError && (
-        <p className="mt-6 rounded-card border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-          No se pudieron cargar los documentos: {loadError}
-        </p>
-      )}
-
-      <section className="mt-10">
-        {documents.length === 0 ? (
-          <EmptyState onAdd={handleAdd} />
-        ) : (
-          <ul className="space-y-3">
-            {documents.map((doc) => (
-              <DocumentCard
-                key={doc.id}
-                document={doc}
-                onDelete={() => handleDelete(doc.id)}
-                onChanged={() => router.refresh()}
-              />
-            ))}
-          </ul>
+        {loadError && (
+          <p className="mt-6 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-sm text-destructive">
+            No se pudieron cargar los documentos: {loadError}
+          </p>
         )}
-      </section>
 
-      {/* Botón flotante de alta */}
-      <button
-        type="button"
-        onClick={handleAdd}
-        className="label-track fixed bottom-6 left-1/2 z-30 -translate-x-1/2 rounded-full bg-rust px-8 py-4 text-bone shadow-2xl shadow-black/50 transition hover:bg-rust-soft"
-      >
-        + Añadir documento
-      </button>
+        <section className="mt-6">
+          {documents.length === 0 ? (
+            <EmptyState onAdd={handleAdd} />
+          ) : (
+            <ul className="space-y-2">
+              {documents.map((doc) => (
+                <DocumentCard
+                  key={doc.id}
+                  document={doc}
+                  onDelete={() => handleDelete(doc.id)}
+                  onChanged={() => router.refresh()}
+                />
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
 
       {uploadOpen && (
         <UploadDialog
@@ -161,28 +163,28 @@ function Stat({
   tone: string;
 }) {
   return (
-    <div className="text-right">
-      <p className={`text-3xl font-bold tabular-nums ${tone}`}>{value}</p>
-      <p className="label-track mt-1 text-muted">{label}</p>
-    </div>
+    <span className="flex items-baseline gap-1.5">
+      <span className={`font-medium tabular-nums ${tone}`}>{value}</span>
+      <span className="heading-meta text-fg-lighter">{label}</span>
+    </span>
   );
 }
 
 function EmptyState({ onAdd }: { onAdd: () => void }) {
   return (
-    <div className="rounded-card border border-dashed border-line bg-surface/50 px-8 py-16 text-center">
-      <p className="label-track text-rust">Todavía nada por aquí</p>
-      <h2 className="mt-4 text-2xl font-semibold">
+    <div className="card-surface px-6 py-14 text-center">
+      <p className="heading-meta text-brand">Todavía nada por aquí</p>
+      <h2 className="mt-4 font-heading text-lg font-semibold text-foreground">
         Empezá por el que más te preocupa
       </h2>
-      <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-muted">
+      <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-fg-light">
         Sacá una foto del DNI, el pasaporte o el carnet de conducir. Leemos la
         fecha de caducidad por vos.
       </p>
       <button
         type="button"
         onClick={onAdd}
-        className="label-track mt-8 rounded-full border border-rust px-7 py-3.5 text-rust-soft transition hover:bg-rust hover:text-bone"
+        className="btn-primary mt-6 px-4 py-2 text-sm"
       >
         Subir el primero
       </button>

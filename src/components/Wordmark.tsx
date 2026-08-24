@@ -1,13 +1,11 @@
 export function Wordmark({ compact = false }: { compact?: boolean }) {
   return (
     <div className="flex items-baseline gap-2">
-      <span className="text-xl font-bold tracking-tight">
+      <span className="font-heading text-lg font-semibold tracking-tight text-foreground">
         Spiderjad
-        <span className="text-rust">.</span>
+        <span className="text-brand">.</span>
       </span>
-      {!compact && (
-        <span className="label-track text-muted">Docs</span>
-      )}
+      {!compact && <span className="heading-meta text-fg-lighter">Docs</span>}
     </div>
   );
 }

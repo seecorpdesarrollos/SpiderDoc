@@ -4,8 +4,8 @@
   "description": "Tus documentos, siempre en vigor.",
   "start_url": "/dashboard",
   "display": "standalone",
-  "background_color": "#12100e",
-  "theme_color": "#12100e",
+  "background_color": "#151816",
+  "theme_color": "#151816",
   "orientation": "portrait",
   "icons": [
     {

@@ -8,23 +8,19 @@ export function LimitModal({
   onClose: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6 backdrop-blur-sm">
-      <div className="w-full max-w-sm rounded-card border border-line bg-surface p-7 text-center">
-        <p className="label-track text-rust">Plan gratuito</p>
-        <div className="rule-accent mx-auto mt-3 mb-6 w-10" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6 backdrop-blur-sm">
+      <div className="card-surface w-full max-w-sm p-6 text-center">
+        <p className="heading-meta text-brand">Plan gratuito</p>
 
-        <h2 className="text-2xl font-bold tracking-tight">
+        <h2 className="mt-4 font-heading text-xl font-semibold text-foreground">
           Límite alcanzado ({limit}/{limit})
         </h2>
-        <p className="mt-3 text-sm leading-relaxed text-muted">
+        <p className="mt-2 text-sm leading-relaxed text-fg-light">
           El plan gratuito guarda hasta {limit} documentos. Borrá uno que ya no
           uses para hacer sitio.
         </p>
 
-        <button
-          onClick={onClose}
-          className="label-track mt-7 w-full rounded-full bg-rust px-6 py-3.5 text-bone transition hover:bg-rust-soft"
-        >
+        <button onClick={onClose} className="btn-primary mt-6 w-full px-4 py-2 text-sm">
           Entendido
         </button>
       </div>
