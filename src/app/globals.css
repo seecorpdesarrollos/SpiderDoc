@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #12100e;
+  --color-surface: #191614;
+  --color-surface-2: #221e1b;
+  --color-line: #332d28;
+  --color-bone: #f4f1ed;
+  --color-muted: #a09589;
+  --color-rust: #b8470e;
+  --color-rust-soft: #d9631f;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+
+  --radius-card: 0.75rem;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background-color: var(--color-ink);
+  color: var(--color-bone);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Etiqueta industrial: mayúsculas con tracking generoso. */
+.label-track {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+.rule-thick {
+  border-bottom: 3px solid var(--color-bone);
+}
+
+.rule-accent {
+  border-bottom: 3px solid var(--color-rust);
+}
+
+input,
+select,
+textarea {
+  color-scheme: dark;
+}
