@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { version } from "./package.json";
 
 /**
  * Orígenes desde los que se permite entrar al dev server además de localhost.
@@ -18,8 +19,24 @@ const devOrigins = (process.env.DEV_ORIGIN ?? "")
   .map((o) => o.trim())
   .filter(Boolean);
 
+/**
+ * Versión visible en el pie de página.
+ *
+ * Se resuelve al COMPILAR, no al arrancar: así el pie muestra exactamente el
+ * build que se está sirviendo. Sirve para saber de un vistazo si lo que estás
+ * mirando en el móvil es el despliegue nuevo o el navegador te está dando
+ * uno viejo de caché — que es media hora perdida cada vez que pasa.
+ *
+ * El commit lo pone Vercel solo. En local no existe y se muestra "local".
+ */
+const commit = (process.env.VERCEL_GIT_COMMIT_SHA ?? "").slice(0, 7) || "local";
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  env: {
+    NEXT_PUBLIC_APP_VERSION: version,
+    NEXT_PUBLIC_APP_COMMIT: commit,
+  },
   ...(devOrigins.length > 0 ? { allowedDevOrigins: devOrigins } : {}),
   experimental: {
     serverActions: {

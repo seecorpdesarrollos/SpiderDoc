@@ -4,6 +4,7 @@ import { useState } from "react";
 import { getExpiryStatus, formatExpiryDate } from "@/lib/expiry";
 import { documentTypeLabel, DOCUMENT_TYPES } from "@/lib/constants";
 import type { DocumentWithUrl } from "@/lib/types";
+import { VisorArchivo } from "@/components/VisorArchivo";
 
 export function DocumentCard({
   document,
@@ -15,6 +16,7 @@ export function DocumentCard({
   onChanged: () => void;
 }) {
   const [editing, setEditing] = useState(false);
+  const [viendoArchivo, setViendoArchivo] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [title, setTitle] = useState(document.title);
   const [expiry, setExpiry] = useState(document.expiry_date);
@@ -127,17 +129,25 @@ export function DocumentCard({
 
               <div className="mt-3 flex flex-wrap items-center gap-3 text-xs">
                 {document.signed_url && (
-                  <a
-                    href={document.signed_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    type="button"
+                    onClick={() => setViendoArchivo(true)}
                     className="focus-ring rounded text-brand-600 underline underline-offset-4"
                   >
                     Ver archivo
-                  </a>
+                  </button>
                 )}
                 <button
-                  onClick={() => setEditing(true)}
+                  onClick={() => {
+                    // Los campos se rellenan al ABRIR el editor, no al montar
+                    // la tarjeta. Si no, después de guardar y refrescar, el
+                    // formulario seguiría mostrando lo que había al principio.
+                    setTitle(document.title);
+                    setExpiry(document.expiry_date);
+                    setDocType(document.document_type);
+                    setError(null);
+                    setEditing(true);
+                  }}
                   className="focus-ring rounded text-fg-lighter underline underline-offset-4 transition-colors hover:text-foreground"
                 >
                   Editar
@@ -171,6 +181,14 @@ export function DocumentCard({
           )}
         </div>
       </div>
+
+      {viendoArchivo && document.signed_url && (
+        <VisorArchivo
+          url={document.signed_url}
+          titulo={document.title}
+          onCerrar={() => setViendoArchivo(false)}
+        />
+      )}
     </li>
   );
 }

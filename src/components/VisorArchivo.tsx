@@ -1,0 +1,117 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+/**
+ * Visor del archivo del documento, dentro de la app.
+ *
+ * Antes se abría la URL firmada en una pestaña nueva, y para un usuario final
+ * eso está mal por tres motivos:
+ *
+ *   1. Sale de la aplicación. En el móvil instalado como PWA es peor todavía:
+ *      salta al navegador, con su barra de direcciones y todo, y da la
+ *      sensación de que la app te ha escupido fuera.
+ *   2. Enseña la URL firmada del almacenamiento. Es un enlace que funciona sin
+ *      sesión durante una hora: queda en el historial, y compartir la pestaña
+ *      es compartir el documento de identidad.
+ *   3. Esa URL caduca. Una pestaña abierta de ayer da un error críptico de
+ *      Supabase en vez de una imagen.
+ *
+ * Aquí se ve encima de la app, se cierra con Escape o tocando fuera, y no
+ * queda nada en el historial del navegador.
+ */
+export function VisorArchivo({
+  url,
+  titulo,
+  onCerrar,
+}: {
+  url: string;
+  titulo: string;
+  onCerrar: () => void;
+}) {
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    function alPulsar(e: KeyboardEvent) {
+      if (e.key === "Escape") onCerrar();
+    }
+    window.addEventListener("keydown", alPulsar);
+
+    // Mientras el visor está abierto, el fondo no debe poder desplazarse:
+    // en móvil, si no, se arrastra la lista por debajo de la imagen.
+    const overflowPrevio = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      window.removeEventListener("keydown", alPulsar);
+      document.body.style.overflow = overflowPrevio;
+    };
+  }, [onCerrar]);
+
+  const esPdf = /\.pdf(\?|$)/i.test(url);
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Archivo de ${titulo}`}
+      onClick={onCerrar}
+      className="fixed inset-0 z-50 flex flex-col bg-black/80 backdrop-blur-sm"
+    >
+      <div className="flex items-center justify-between gap-4 px-4 py-3">
+        <p className="min-w-0 truncate text-sm font-medium text-white/90">
+          {titulo}
+        </p>
+        <button
+          type="button"
+          onClick={onCerrar}
+          aria-label="Cerrar"
+          // 44px: por debajo de eso se falla el toque en el móvil.
+          className="focus-ring flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            aria-hidden
+          >
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
+      </div>
+
+      <div
+        // El clic dentro no cierra: si no, ampliar la foto la haría desaparecer.
+        onClick={(e) => e.stopPropagation()}
+        className="flex flex-1 items-center justify-center overflow-auto px-4 pb-4"
+      >
+        {error ? (
+          <div className="max-w-xs text-center">
+            <p className="text-sm text-white/90">No se pudo cargar el archivo.</p>
+            <p className="mt-2 text-xs leading-relaxed text-white/60">
+              El enlace de acceso caduca al cabo de una hora. Cerrá esto y
+              recargá la página para pedir uno nuevo.
+            </p>
+          </div>
+        ) : esPdf ? (
+          <iframe
+            src={url}
+            title={`Archivo de ${titulo}`}
+            className="h-full w-full rounded-lg bg-white"
+          />
+        ) : (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={url}
+            alt={`Archivo de ${titulo}`}
+            onError={() => setError(true)}
+            className="max-h-full max-w-full rounded-lg object-contain"
+          />
+        )}
+      </div>
+    </div>
+  );
+}

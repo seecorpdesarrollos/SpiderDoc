@@ -1,26 +1,16 @@
 import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
-import { Inter, Manrope, Source_Code_Pro } from "next/font/google";
+
 import "./globals.css";
 import { THEME_COOKIE, parseTheme } from "@/lib/theme";
+import { Footer } from "@/components/Footer";
+import { RegistrarSW } from "@/components/RegistrarSW";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
+const inter = { variable: "--font-inter" };
 
-const manrope = Manrope({
-  subsets: ["latin"],
-  variable: "--font-manrope",
-  display: "swap",
-});
+const manrope = { variable: "--font-manrope" };
 
-const sourceCodePro = Source_Code_Pro({
-  subsets: ["latin"],
-  variable: "--font-source-code-pro",
-  display: "swap",
-});
+const sourceCodePro = { variable: "--font-source-code-pro" };
 
 export const metadata: Metadata = {
   title: "Spiderjad Docs — Control de caducidades",
@@ -32,6 +22,16 @@ export const metadata: Metadata = {
     capable: true,
     title: "Spiderjad Docs",
     statusBarStyle: "black-translucent",
+  },
+  // iOS ignora los iconos del manifest y busca este. Sin él, al añadir la app
+  // a la pantalla de inicio en un iPhone sale una captura de la página en vez
+  // del icono.
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
   },
 };
 
@@ -59,8 +59,10 @@ export default async function RootLayout({
       className={`${inter.variable} ${manrope.variable} ${sourceCodePro.variable}`}
       suppressHydrationWarning
     >
-      <body className="min-h-dvh bg-background font-sans text-foreground antialiased">
-        {children}
+      <body className="flex min-h-dvh flex-col bg-background font-sans text-foreground antialiased">
+        <div className="flex flex-1 flex-col">{children}</div>
+        <Footer />
+        <RegistrarSW />
       </body>
     </html>
   );
