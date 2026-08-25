@@ -18,24 +18,50 @@ export class ExtractionError extends Error {
   }
 }
 
-const PROMPT = `Eres un extractor de datos de documentos de identidad y documentos oficiales.
+const PROMPT = `Eres un extractor de fechas de caducidad de documentos oficiales
+de cualquier país. Analiza la imagen o PDF adjunto y devuelve EXCLUSIVAMENTE JSON válido.
 
-Analiza la imagen o PDF adjunto y devuelve EXCLUSIVAMENTE JSON válido.
+QUÉ BUSCAR
+"expiry_date" es la fecha hasta la que el documento es VÁLIDO, en formato YYYY-MM-DD.
+Según el país y el idioma aparece con etiquetas distintas:
 
-Reglas:
-1. "expiry_date" es la FECHA DE CADUCIDAD / VALIDEZ del documento, en formato YYYY-MM-DD.
-   - En documentos españoles suele aparecer como "VALIDEZ", "VÁLIDO HASTA", "FECHA DE CADUCIDAD" o "EXPIRY".
-   - En pasaportes con MRZ, es el campo de expiración de la segunda línea (formato YYMMDD).
-   - NO confundas con la fecha de nacimiento ni con la fecha de emisión/expedición.
-   - Si el documento tiene varias fechas, elige la que representa hasta cuándo es válido.
-2. Si NO puedes leer con seguridad una fecha de caducidad, devuelve expiry_date = null.
+  Español    VALIDEZ · VÁLIDO HASTA · FECHA DE CADUCIDAD · VENCIMIENTO ·
+             FECHA DE VENCIMIENTO (habitual en el DNI argentino)
+  Italiano   SCADENZA · VALIDO FINO AL · DATA DI SCADENZA
+  Inglés     EXPIRY · DATE OF EXPIRY · VALID UNTIL
+  Francés    DATE D'EXPIRATION · VALABLE JUSQU'AU
+  Portugués  VALIDADE · DATA DE VALIDADE
+  Alemán     GÜLTIG BIS
+
+ZONA MRZ (pasaportes y muchas tarjetas de identidad)
+Si ves las dos o tres líneas de caracteres en mayúsculas con muchos símbolos "<",
+úsalas: son más fiables que el texto impreso. En un pasaporte (formato TD3, dos
+líneas de 44 caracteres), la segunda línea contiene, en orden: número de documento
+(9), dígito de control (1), nacionalidad (3), fecha de nacimiento AAMMDD (6),
+dígito de control (1), sexo (1), y entonces la FECHA DE CADUCIDAD en AAMMDD (6).
+En los formatos TD1 y TD2 la caducidad también va después del sexo.
+Interpreta el año de dos cifras con sentido: una caducidad está en el futuro o en
+el pasado reciente, nunca a sesenta años vista.
+
+REGLAS
+1. NO confundas la caducidad con la fecha de nacimiento ni con la de emisión o
+   expedición. Si hay varias fechas, elige la que indica hasta cuándo vale.
+2. Ojo con el orden día/mes: los documentos españoles e italianos usan DD/MM/AAAA;
+   algunos documentos en inglés usan MM/DD/AAAA. Si el día es mayor que 12,
+   resuelve la ambigüedad con eso. Si sigue siendo ambiguo, bájale la confianza y
+   dilo en "notes".
+3. Si NO podés leer con seguridad una fecha de caducidad, devolvé expiry_date = null.
    Nunca inventes ni estimes una fecha.
-3. "document_type" debe ser uno de: dni, passport, driving_license, residence_card,
-   health_card, insurance, vehicle_itv, other.
-4. "document_holder" es el nombre del titular si es legible; si no, null.
-5. "confidence" refleja tu seguridad sobre expiry_date: high, medium o low.
-6. "notes" es una frase corta en español explicando cualquier problema
-   (imagen borrosa, recortada, fecha ambigua). Si todo está bien, null.`;
+4. Algunos documentos son permanentes y no caducan (ciertos DNI italianos antiguos,
+   algunos certificados). En ese caso expiry_date = null y explicalo en "notes".
+5. "document_type" debe ser uno de: dni, passport, driving_license, residence_card,
+   health_card, insurance, vehicle_itv, other. La TIE y el NIE van como residence_card.
+6. "issuing_country" es el código de tres letras del país emisor si podés
+   determinarlo (ESP, ITA, ARG...); si no, null.
+7. "document_holder" es el nombre del titular si es legible; si no, null.
+8. "confidence" refleja tu seguridad sobre expiry_date: high, medium o low.
+9. "notes" es una frase corta en español explicando cualquier problema: imagen
+   borrosa, recortada, fecha ambigua, documento sin caducidad. Si todo está bien, null.`;
 
 const RESPONSE_SCHEMA = {
   type: Type.OBJECT,
@@ -60,6 +86,11 @@ const RESPONSE_SCHEMA = {
       ],
     },
     document_holder: { type: Type.STRING, nullable: true },
+    issuing_country: {
+      type: Type.STRING,
+      nullable: true,
+      description: "Código de 3 letras del país emisor (ESP, ITA, ARG...), o null.",
+    },
     confidence: { type: Type.STRING, enum: ["high", "medium", "low"] },
     notes: { type: Type.STRING, nullable: true },
   },
@@ -144,6 +175,7 @@ export async function extractExpiryData(
     expiry_date: expiry,
     document_type: parsed.document_type ?? null,
     document_holder: parsed.document_holder ?? null,
+    issuing_country: parsed.issuing_country ?? null,
     confidence: parsed.confidence ?? "low",
     notes: parsed.notes ?? null,
   };
