@@ -114,7 +114,10 @@ export async function extractExpiryData(
   }
 
   const ai = new GoogleGenAI({ apiKey });
-  const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+  // Google retira modelos: en agosto de 2026 gemini-2.5-flash dejó de estar
+  // disponible para cuentas nuevas. Por eso el modelo es configurable —
+  // cuando vuelva a pasar, se cambia GEMINI_MODEL en el .env sin tocar código.
+  const model = process.env.GEMINI_MODEL || "gemini-3.6-flash";
   const base64 = Buffer.from(fileBuffer).toString("base64");
 
   let raw: string | undefined;

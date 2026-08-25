@@ -14,7 +14,7 @@ Un producto de **Spiderjad SL**.
 |---|---|---|
 | Frontend / PWA | Next.js 16 (App Router) + Tailwind v4 | Vercel free |
 | Auth + BBDD + Storage | Supabase (PostgreSQL) | Free tier |
-| OCR / Visión | Google Gemini (`gemini-2.5-flash`) | AI Studio free tier |
+| OCR / Visión | Google Gemini (`gemini-3.6-flash`) | AI Studio free tier |
 | Deploy | Vercel | Free |
 
 Todo TypeScript en modo `strict`.
