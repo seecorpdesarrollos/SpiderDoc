@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
+import { cookies } from "next/headers";
 import { Inter, Manrope, Source_Code_Pro } from "next/font/google";
 import "./globals.css";
+import { THEME_COOKIE, parseTheme } from "@/lib/theme";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -43,31 +45,21 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
-/**
- * Aplica el tema guardado antes de que se pinte el contenido. Sin esto, quien
- * eligió oscuro ve un fogonazo blanco en cada carga.
- *
- * Va como primer hijo de <body>, no dentro de un <head> propio: en App Router
- * el layout raíz no debe renderizar <head> manualmente — React lo reordena y
- * la posición del script deja de estar garantizada, que es justo lo único que
- * importa aquí. Como primer hijo de <body> corre antes de que se pinte nada.
- *
- * El try/catch no es decorativo: localStorage lanza excepción en modo privado
- * y con cookies bloqueadas.
- */
-const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem('spiderjad-theme');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t)}}catch(e){}})()`;
-
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  // El tema sale del servidor, ya resuelto. Ver src/lib/theme.ts para el
+  // porqué de la cookie en vez de un script inline con localStorage.
+  const theme = parseTheme((await cookies()).get(THEME_COOKIE)?.value);
+
   return (
     <html
       lang="es"
+      data-theme={theme}
       className={`${inter.variable} ${manrope.variable} ${sourceCodePro.variable}`}
       suppressHydrationWarning
     >
       <body className="min-h-dvh bg-background font-sans text-foreground antialiased">
-        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         {children}
       </body>
     </html>

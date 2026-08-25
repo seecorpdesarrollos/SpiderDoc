@@ -1,52 +1,51 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-type Theme = "light" | "dark" | "system";
-
-const STORAGE_KEY = "spiderjad-theme";
-
-function apply(theme: Theme) {
-  const root = document.documentElement;
-  if (theme === "system") root.removeAttribute("data-theme");
-  else root.setAttribute("data-theme", theme);
-}
+import {
+  THEME_COOKIE,
+  THEME_COOKIE_MAX_AGE,
+  parseTheme,
+  type Theme,
+} from "@/lib/theme";
 
 function systemPrefersDark() {
   return window.matchMedia("(prefers-color-scheme: dark)").matches;
 }
 
+/**
+ * La cookie la escribe el cliente, pero la lee el servidor en el layout. Por
+ * eso no vale un `document.cookie` cualquiera: sin `path=/` solo valdría para
+ * la ruta actual, y sin `max-age` se borraría al cerrar el navegador.
+ *
+ * SameSite=Lax es suficiente: no es una cookie de sesión ni de autenticación,
+ * es una preferencia visual. No lleva `Secure` a propósito, para que siga
+ * funcionando cuando abrís la app por la IP local desde el móvil, que es http.
+ */
+function saveTheme(theme: Theme) {
+  document.cookie = `${THEME_COOKIE}=${theme}; path=/; max-age=${THEME_COOKIE_MAX_AGE}; SameSite=Lax`;
+}
+
 export function ThemeToggle() {
-  // Empieza en null hasta que monta: el servidor no sabe qué tema tiene el
-  // usuario, así que pintar un icono concreto en SSR daría un desajuste de
-  // hidratación. El script del layout ya evita el parpadeo del fondo.
+  // El servidor ya escribió data-theme en el <html> si había cookie, así que
+  // aquí solo hay que leerlo del DOM. No hay desajuste de hidratación posible:
+  // se lee justo lo que el servidor puso.
   const [theme, setTheme] = useState<Theme | null>(null);
 
   useEffect(() => {
-    let stored: Theme | null = null;
-    try {
-      stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
-    } catch {
-      // Modo privado o cookies bloqueadas: seguimos con el del sistema.
-    }
-    setTheme(stored ?? "system");
+    setTheme(parseTheme(document.documentElement.getAttribute("data-theme")) ?? null);
   }, []);
 
   function toggle() {
-    const isDark =
-      theme === "dark" || (theme === "system" && systemPrefersDark());
+    // Sin elección previa, el punto de partida es lo que diga el sistema.
+    const isDark = theme ? theme === "dark" : systemPrefersDark();
     const next: Theme = isDark ? "light" : "dark";
 
     setTheme(next);
-    apply(next);
-    try {
-      localStorage.setItem(STORAGE_KEY, next);
-    } catch {
-      // Si no se puede guardar, el cambio vale para esta pestaña y ya.
-    }
+    document.documentElement.setAttribute("data-theme", next);
+    saveTheme(next);
   }
 
-  const label = theme === null ? "Cambiar tema" : "Cambiar a tema claro u oscuro";
+  const label = "Cambiar a tema claro u oscuro";
 
   return (
     <button
