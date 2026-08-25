@@ -24,6 +24,23 @@ type Resultado = {
   bytes?: number;
 };
 
+/**
+ * crypto.randomUUID() solo existe en contexto seguro: en localhost sí, pero al
+ * entrar por la IP de la red desde el móvil (http://192.168.x.x) no está, y la
+ * llamada revienta. Como este id solo sirve para distinguir filas en pantalla,
+ * cualquier valor único vale.
+ */
+function nuevoId(): string {
+  try {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+      return crypto.randomUUID();
+    }
+  } catch {
+    // Da igual el motivo: seguimos con la reserva.
+  }
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 const CONFIANZA: Record<string, string> = {
   high: "alta",
   medium: "media",
@@ -40,7 +57,7 @@ export function Bench() {
 
   async function procesar(files: FileList) {
     for (const file of Array.from(files)) {
-      const id = crypto.randomUUID();
+      const id = nuevoId();
       const preview = file.type.startsWith("image/")
         ? URL.createObjectURL(file)
         : null;
