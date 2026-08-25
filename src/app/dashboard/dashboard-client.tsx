@@ -22,9 +22,29 @@ export function DashboardClient({
   loadError: string | null;
 }) {
   const router = useRouter();
-  const [documents, setDocuments] = useState(initialDocuments);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [limitOpen, setLimitOpen] = useState(false);
+
+  /**
+   * Ids borrados desde aquí y que el servidor todavía no sabe que no están.
+   *
+   * Antes la lista vivía en un useState(initialDocuments), y eso era el bug
+   * por el que subir un documento no lo mostraba: useState solo mira su valor
+   * inicial la primera vez. router.refresh() volvía a pedir los datos al
+   * servidor y llegaban bien, pero el estado ya estaba fijado y los ignoraba.
+   * Solo aparecía recargando la página a mano.
+   *
+   * Ahora la lista SIEMPRE es la del servidor. Lo único que guardamos es qué
+   * hemos borrado, para que la tarjeta desaparezca al instante sin esperar a
+   * la respuesta. Cuando el servidor confirma, el documento ya no viene en la
+   * lista y el id sobrante no molesta.
+   */
+  const [borrando, setBorrando] = useState<ReadonlySet<string>>(new Set());
+
+  const documents = useMemo(
+    () => initialDocuments.filter((d) => !borrando.has(d.id)),
+    [initialDocuments, borrando],
+  );
 
   const used = documents.length;
   const atLimit = used >= limit;
@@ -47,14 +67,20 @@ export function DashboardClient({
   }
 
   async function handleDelete(id: string) {
-    const previous = documents;
-    setDocuments((docs) => docs.filter((d) => d.id !== id));
+    setBorrando((ids) => new Set(ids).add(id));
 
     const res = await fetch(`/api/documents/${id}`, { method: "DELETE" });
+
     if (!res.ok) {
-      setDocuments(previous);
+      // No se pudo borrar: la tarjeta vuelve.
+      setBorrando((ids) => {
+        const siguiente = new Set(ids);
+        siguiente.delete(id);
+        return siguiente;
+      });
       return;
     }
+
     router.refresh();
   }
 
