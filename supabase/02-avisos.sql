@@ -148,6 +148,11 @@ $$;
 
 -- La función es SECURITY DEFINER: hay que asegurarse de que NO la pueda
 -- llamar cualquiera desde el navegador con la clave anónima.
+-- El cron SÍ tiene que poder llamarla: corre con la service_role key. Se
+-- concede explícitamente en vez de confiar en los privilegios por defecto de
+-- Supabase, que podrían cambiar.
+grant execute on function public.pending_notifications() to service_role;
+
 do $$
 begin
   revoke all on function public.pending_notifications() from public;
@@ -178,6 +183,8 @@ as $$
   values (p_document_id, p_milestone)
   on conflict (document_id, milestone) do nothing;
 $$;
+
+grant execute on function public.mark_notification_sent(uuid, smallint) to service_role;
 
 do $$
 begin
