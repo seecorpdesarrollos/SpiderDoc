@@ -133,11 +133,21 @@ constante `free_limit` del trigger en `supabase/schema.sql`.
 
 Definido en `src/lib/expiry.ts`, según lo acordado en el brief:
 
-| Color | Condición |
-|---|---|
-| 🔴 Rojo | Caducado o faltan **menos de 30** días |
-| 🟡 Amarillo | Entre **30 y 90** días |
-| 🟢 Verde | Más de **90** días |
+| Color | Condición | Qué significa |
+|---|---|---|
+| 🔴 Rojo | Caducado o faltan **menos de 3 meses** | La ventana de trámite se está cerrando |
+| 🟡 Ámbar | Entre **3 y 6 meses** | La ventana está abierta: es el momento de renovar |
+| 🟢 Verde | Más de **6 meses** | Todavía no se puede hacer nada |
+
+**Por qué meses y no días.** Renovar un documento en un consulado extranjero no
+se parece a renovarlo en tu país. El consulado italiano no acepta la renovación
+del pasaporte hasta 6 meses antes de la caducidad; el argentino tarda ~90 días
+en entregar el documento; la TIE española tiene esperas reales de 3 a 6 meses.
+Avisar a 30 días, como hacía la primera versión, es avisar cuando ya no hay
+nada que hacer.
+
+Los dos cortes están en `WINDOW_OPENS_DAYS` (180) y `WINDOW_CLOSING_DAYS` (90),
+en `src/lib/expiry.ts`.
 
 El dashboard ordena siempre por `expiry_date` ascendente: lo que caduca antes,
 arriba.
@@ -181,7 +191,7 @@ supabase/schema.sql                  tablas, RLS, trigger, bucket
 
 ## Pendiente (siguiente iteración)
 
-- [ ] Avisos por email con Resend + cron de Vercel (30 / 7 / 1 días antes).
+- [ ] Avisos por email con Resend + cron de Vercel (6 / 3 / 1 meses antes).
 - [ ] Web Push y service worker para PWA instalable offline.
 - [ ] Recorte y mejora de la foto antes de mandarla al OCR (menos tokens, más acierto).
 - [ ] Pasarela de pago para el plan de pago.

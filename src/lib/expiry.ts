@@ -10,6 +10,30 @@ export type ExpiryStatus = {
   dot: string;
 };
 
+/**
+ * Umbrales del semáforo, en días.
+ *
+ * No son 30/90 días como en la primera versión, y el cambio no es cosmético:
+ * es el producto entero. Renovar un documento en un consulado extranjero no
+ * se parece en nada a renovarlo en tu propio país.
+ *
+ *   · El consulado italiano no acepta la renovación del pasaporte hasta
+ *     6 meses antes de la caducidad. Antes de eso no podés hacer nada.
+ *   · El consulado argentino tarda ~90 días en entregar el documento, y los
+ *     turnos se liberan los miércoles solo para la semana siguiente.
+ *   · La TIE española tiene una espera real de 3 a 6 meses en Madrid,
+ *     Barcelona y Valencia.
+ *
+ * De ahí salen los dos cortes:
+ *   180 días (6 meses) -> se abre la ventana. Es el aviso útil.
+ *    90 días (3 meses) -> la ventana se está cerrando. Es la alarma.
+ *
+ * Avisar a 30 días, como hacía la versión anterior, es avisar cuando ya no
+ * hay nada que hacer.
+ */
+export const WINDOW_OPENS_DAYS = 180;
+export const WINDOW_CLOSING_DAYS = 90;
+
 /** Diferencia en días naturales entre hoy y la fecha de caducidad (UTC, sin horas). */
 export function daysUntil(expiryDate: string, now: Date = new Date()): number {
   const [y, m, d] = expiryDate.split("-").map(Number);
@@ -19,10 +43,33 @@ export function daysUntil(expiryDate: string, now: Date = new Date()): number {
 }
 
 /**
+ * Convierte un número de días en algo que una persona lee de un vistazo.
+ *
+ * "Caduca en 1954 días" no lo procesa nadie: hay que pararse a dividir. Como
+ * ahora el horizonte del producto son años y no semanas, por encima de tres
+ * meses se habla en meses y por encima de dos años, en años.
+ *
+ * El corte está justo en WINDOW_CLOSING_DAYS a propósito: dentro de la banda
+ * roja los días cuentan de verdad (89 días no es lo mismo que 60 cuando el
+ * consulado tarda 90), así que ahí se dan exactos. Fuera de ella, redondear a
+ * meses no pierde nada útil.
+ */
+export function humanizeDays(days: number): string {
+  const n = Math.abs(days);
+  if (n < WINDOW_CLOSING_DAYS) return n === 1 ? "1 día" : `${n} días`;
+  if (n < 730) {
+    const months = Math.round(n / 30.44);
+    return months === 1 ? "1 mes" : `${months} meses`;
+  }
+  const years = Math.floor(n / 365.25);
+  return years === 1 ? "1 año" : `${years} años`;
+}
+
+/**
  * Semáforo de caducidad.
- *   Rojo    -> caducado o < 30 días
- *   Amarillo-> 30 a 90 días
- *   Verde   -> > 90 días
+ *   Rojo    -> caducado o quedan menos de 3 meses
+ *   Ámbar   -> entre 3 y 6 meses: la ventana de trámite está abierta
+ *   Verde   -> más de 6 meses
  *
  * Los colores son los de la paleta de estado de Supabase, no los rojos y
  * ámbares por defecto de Tailwind: mantienen la cohesión con el resto.
@@ -43,12 +90,12 @@ export function getExpiryStatus(expiryDate: string, now: Date = new Date()): Exp
       label:
         daysRemaining === -1
           ? "Caducó ayer"
-          : `Caducó hace ${Math.abs(daysRemaining)} días`,
+          : `Caducó hace ${humanizeDays(daysRemaining)}`,
       ...danger,
     };
   }
 
-  if (daysRemaining < 30) {
+  if (daysRemaining < WINDOW_CLOSING_DAYS) {
     return {
       level: "critical",
       daysRemaining,
@@ -57,16 +104,16 @@ export function getExpiryStatus(expiryDate: string, now: Date = new Date()): Exp
           ? "Caduca hoy"
           : daysRemaining === 1
             ? "Caduca mañana"
-            : `Caduca en ${daysRemaining} días`,
+            : `Caduca en ${humanizeDays(daysRemaining)}`,
       ...danger,
     };
   }
 
-  if (daysRemaining <= 90) {
+  if (daysRemaining <= WINDOW_OPENS_DAYS) {
     return {
       level: "warning",
       daysRemaining,
-      label: `Caduca en ${daysRemaining} días`,
+      label: `Caduca en ${humanizeDays(daysRemaining)}`,
       pill: "border-warning/30 bg-warning/10 text-warning",
       bar: "bg-warning-dim",
       dot: "bg-warning",
@@ -76,7 +123,7 @@ export function getExpiryStatus(expiryDate: string, now: Date = new Date()): Exp
   return {
     level: "ok",
     daysRemaining,
-    label: `Caduca en ${daysRemaining} días`,
+    label: `Caduca en ${humanizeDays(daysRemaining)}`,
     pill: "border-brand/30 bg-brand/10 text-brand-600",
     bar: "bg-brand-500",
     dot: "bg-brand",

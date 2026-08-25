@@ -15,3 +15,6 @@ next-env.d.ts
 
 # vercel
 .vercel
+
+# basura local que device_bash no puede borrar
+_to_delete/

@@ -83,7 +83,7 @@ export function DashboardClient({
             <p className="heading-meta text-fg-lighter">Tus documentos</p>
             <div className="flex items-center gap-4 text-xs">
               <Stat value={summary.red} label="Urgentes" tone="text-destructive" />
-              <Stat value={summary.amber} label="Próximos" tone="text-warning" />
+              <Stat value={summary.amber} label="Renovar ya" tone="text-warning" />
             </div>
           </div>
 
