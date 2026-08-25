@@ -45,6 +45,18 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
 
+-- El trigger de arriba solo salta cuando se DA DE ALTA un usuario. Si alguien
+-- ya se registró antes de que existiera esta tabla —cosa que pasó: la
+-- autenticación de Supabase funciona sin que exista el esquema public— ese
+-- usuario se queda sin perfil, y sin perfil no puede guardar documentos
+-- porque documents.user_id apunta aquí.
+--
+-- Esto rellena los que falten. Es idempotente y no pisa nada.
+insert into public.profiles (id, email)
+select u.id, u.email
+from auth.users u
+on conflict (id) do nothing;
+
 -- ---------------------------------------------------------------------------
 -- 2. DOCUMENTS
 -- ---------------------------------------------------------------------------
