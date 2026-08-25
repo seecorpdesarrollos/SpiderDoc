@@ -5,6 +5,8 @@ export async function POST(request: NextRequest) {
   const supabase = await createClient();
   await supabase.auth.signOut();
 
-  const base = process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin;
+  // El origen de la petición: devuelve al usuario a donde estaba, sea
+  // localhost, la IP de la red o el dominio de producción.
+  const base = new URL(request.url).origin;
   return NextResponse.redirect(`${base}/`, { status: 303 });
 }

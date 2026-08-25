@@ -10,7 +10,11 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/dashboard";
 
-  const base = process.env.NEXT_PUBLIC_SITE_URL || origin;
+  // Siempre el origen de la petición, nunca una URL configurada. Si el enlace
+  // se abre desde el móvil por la IP de la red, la vuelta tiene que ir a esa
+  // misma IP; una variable fijada a localhost dejaba la sesión colgada en
+  // cualquier dispositivo que no fuera el del desarrollo.
+  const base = origin;
 
   if (!code) {
     return NextResponse.redirect(`${base}/login?error=missing_code`);

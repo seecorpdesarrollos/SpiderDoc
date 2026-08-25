@@ -16,11 +16,7 @@ export function LoginForm({ nextPath }: { nextPath: string }) {
     setMessage(null);
 
     const supabase = createClient();
-    // El origen real desde el que se pide el enlace, no el configurado: si
-    // entrás por IP desde el móvil, el enlace tiene que volver a esa IP.
-    // NEXT_PUBLIC_SITE_URL apuntando a localhost dejaba el enlace muerto en
-    // cualquier dispositivo que no fuera este ordenador.
-    const origin = window.location.origin;
+    const origin = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
 
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),

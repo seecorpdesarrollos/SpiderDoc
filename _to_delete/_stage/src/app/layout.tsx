@@ -44,16 +44,10 @@ export const viewport: Viewport = {
 };
 
 /**
- * Aplica el tema guardado antes de que se pinte el contenido. Sin esto, quien
- * eligió oscuro ve un fogonazo blanco en cada carga.
- *
- * Va como primer hijo de <body>, no dentro de un <head> propio: en App Router
- * el layout raíz no debe renderizar <head> manualmente — React lo reordena y
- * la posición del script deja de estar garantizada, que es justo lo único que
- * importa aquí. Como primer hijo de <body> corre antes de que se pinte nada.
- *
- * El try/catch no es decorativo: localStorage lanza excepción en modo privado
- * y con cookies bloqueadas.
+ * Se ejecuta antes del primer pintado para aplicar el tema guardado. Sin esto
+ * el usuario que eligió oscuro ve un fogonazo blanco en cada carga.
+ * Va en try/catch porque localStorage tira excepción en algunos contextos
+ * (modo privado, cookies bloqueadas) y no queremos romper la página por eso.
  */
 const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem('spiderjad-theme');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t)}}catch(e){}})()`;
 
@@ -66,8 +60,10 @@ export default function RootLayout({
       className={`${inter.variable} ${manrope.variable} ${sourceCodePro.variable}`}
       suppressHydrationWarning
     >
-      <body className="min-h-dvh bg-background font-sans text-foreground antialiased">
+      <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
+      <body className="min-h-dvh bg-background font-sans text-foreground antialiased">
         {children}
       </body>
     </html>

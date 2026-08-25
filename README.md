@@ -59,13 +59,14 @@ Rellená:
 | Variable | Dónde sale |
 |---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase → Project Settings → Data API |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → Project Settings → API Keys → `anon` |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Project Settings → API Keys → `service_role` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → Project Settings → API Keys → `anon` o `publishable` |
 | `GEMINI_API_KEY` | Google AI Studio |
 | `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` en local |
 
-> La `service_role` key salta RLS. Nunca la pongas en una variable
-> `NEXT_PUBLIC_` ni la subas al repo.
+> No hace falta la `service_role` key. Todo el acceso a datos pasa por el
+> cliente autenticado del usuario y lo filtra RLS, que es justo lo que
+> queremos para documentos de identidad: ni el propio servidor tiene una vía
+> para leer los documentos de otro usuario.
 
 ### 5. Arrancar
 
@@ -78,7 +79,7 @@ npm run dev
 ### 6. Desplegar en Vercel
 
 1. Importá el repo en Vercel.
-2. Copiá las cinco variables de entorno en **Settings → Environment Variables**.
+2. Copiá las cuatro variables de entorno en **Settings → Environment Variables**.
 3. Cambiá `NEXT_PUBLIC_SITE_URL` a la URL de producción.
 4. Añadí `https://tu-dominio.vercel.app/auth/callback` a las *Redirect URLs*
    de Supabase.
@@ -161,7 +162,7 @@ src/
     ├── expiry.ts                    semáforo y fechas
     ├── gemini.ts                    OCR con salida JSON estructurada
     ├── constants.ts                 límite, tipos, bucket
-    └── supabase/                    client / server / admin / middleware
+    └── supabase/                    client / server / middleware
 supabase/schema.sql                  tablas, RLS, trigger, bucket
 ```
 
