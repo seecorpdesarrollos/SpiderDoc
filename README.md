@@ -146,8 +146,13 @@ en entregar el documento; la TIE española tiene esperas reales de 3 a 6 meses.
 Avisar a 30 días, como hacía la primera versión, es avisar cuando ya no hay
 nada que hacer.
 
-Los dos cortes están en `WINDOW_OPENS_DAYS` (180) y `WINDOW_CLOSING_DAYS` (90),
-en `src/lib/expiry.ts`.
+Los cortes **no son fijos**: salen de la antelación que el usuario elige en
+Ajustes (`profiles.lead_time_months`, 6 por defecto). Ámbar empieza en esa
+antelación y rojo en su mitad, que son exactamente los mismos escalones con
+los que `pending_notifications()` decide mandar el correo. Si no coincidieran,
+la tarjeta y el aviso dirían cosas distintas del mismo documento.
+
+Ver `cortesSemaforo()` en `src/lib/expiry.ts`.
 
 El dashboard ordena siempre por `expiry_date` ascendente: lo que caduca antes,
 arriba.

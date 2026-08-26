@@ -18,6 +18,7 @@ export function DocumentCard({
   onChanged,
   indice = 0,
   formato = "ambos",
+  antelacion = 6,
 }: {
   document: DocumentWithUrl;
   onDelete: () => void;
@@ -26,6 +27,8 @@ export function DocumentCard({
   indice?: number;
   /** Cómo mostrar la caducidad. Ver src/lib/preferencias.ts */
   formato?: FormatoCaducidad;
+  /** Meses de antelación del usuario: define los cortes del semáforo. */
+  antelacion?: number;
 }) {
   const [editing, setEditing] = useState(false);
   const [viendoArchivo, setViendoArchivo] = useState(false);
@@ -36,7 +39,7 @@ export function DocumentCard({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const status = getExpiryStatus(document.expiry_date);
+  const status = getExpiryStatus(document.expiry_date, new Date(), antelacion);
 
   async function save() {
     setSaving(true);

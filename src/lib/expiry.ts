@@ -31,8 +31,46 @@ export type ExpiryStatus = {
  * Avisar a 30 días, como hacía la versión anterior, es avisar cuando ya no
  * hay nada que hacer.
  */
-export const WINDOW_OPENS_DAYS = 180;
-export const WINDOW_CLOSING_DAYS = 90;
+/** Antelación por defecto, en meses, si el usuario no ha elegido otra. */
+export const ANTELACION_POR_DEFECTO = 6;
+
+/**
+ * Cuántos días faltan hasta dentro de N meses, contando meses de calendario.
+ *
+ * No vale multiplicar por 30: hay que dar el MISMO número que da Postgres con
+ * `current_date + interval 'N months'`, porque de eso depende que el color de
+ * la tarjeta y el correo digan lo mismo del mismo documento.
+ */
+function diasHastaMeses(meses: number, now: Date): number {
+  const hoy = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  const futuro = new Date(hoy);
+  futuro.setUTCMonth(futuro.getUTCMonth() + meses);
+  return Math.round((futuro.getTime() - hoy) / 86_400_000);
+}
+
+/**
+ * Los dos cortes del semáforo, derivados de la antelación que eligió el
+ * usuario.
+ *
+ * Antes estaban fijos en 180 y 90 días. Coincidían con el valor por defecto,
+ * así que parecía correcto — pero en cuanto alguien cambiaba su antelación en
+ * Ajustes, la tarjeta y el aviso empezaban a contradecirse: con 12 meses el
+ * correo llegaba al año y la tarjeta seguía verde hasta los seis.
+ *
+ * La división entera y el mínimo de 1 replican exactamente lo que hace
+ * pending_notifications() en SQL. Tienen que ser los mismos escalones o
+ * volvemos al mismo problema por otra puerta.
+ */
+export function cortesSemaforo(leadTimeMonths: number, now: Date) {
+  const lead = Math.min(Math.max(Math.round(leadTimeMonths), 1), 24);
+  const mitad = Math.max(Math.floor(lead / 2), 1);
+  return {
+    /** Se abre la ventana: a partir de aquí ya se puede hacer algo. */
+    abre: diasHastaMeses(lead, now),
+    /** Se está cerrando: a partir de aquí vas justo. */
+    cierra: diasHastaMeses(mitad, now),
+  };
+}
 
 /** Diferencia en días naturales entre hoy y la fecha de caducidad (UTC, sin horas). */
 export function daysUntil(expiryDate: string, now: Date = new Date()): number {
@@ -49,15 +87,14 @@ export function daysUntil(expiryDate: string, now: Date = new Date()): number {
  * ahora el horizonte del producto son años y no semanas, por encima de tres
  * meses se habla en meses y por encima de dos años, en años.
  *
- * El corte está justo en WINDOW_CLOSING_DAYS a propósito: dentro de la banda
- * roja los días cuentan de verdad (89 días no es lo mismo que 60 cuando el
- * consulado tarda 90), así que ahí se dan exactos. Fuera de ella, redondear a
- * meses no pierde nada útil.
+ * El corte está en 90 días: por debajo, los días cuentan de verdad —89 no es
+ * lo mismo que 60 cuando el consulado tarda 90— así que se dan exactos. Por
+ * encima, redondear a meses no pierde nada útil.
  */
 export function humanizeDays(days: number): string {
   const n = Math.abs(days);
 
-  if (n < WINDOW_CLOSING_DAYS) return n === 1 ? "1 día" : `${n} días`;
+  if (n < 90) return n === 1 ? "1 día" : `${n} días`;
 
   if (n < 730) {
     const months = Math.round(n / 30.44);
@@ -83,16 +120,23 @@ export function humanizeDays(days: number): string {
 }
 
 /**
- * Semáforo de caducidad.
- *   Rojo    -> caducado o quedan menos de 3 meses
- *   Ámbar   -> entre 3 y 6 meses: la ventana de trámite está abierta
- *   Verde   -> más de 6 meses
+ * Semáforo de caducidad, con los cortes que correspondan a la antelación que
+ * el usuario haya elegido.
+ *
+ * Con el valor por defecto (6 meses) sale lo de siempre: rojo por debajo de
+ * 3 meses, ámbar entre 3 y 6, verde por encima. Con cualquier otro valor, el
+ * color y el correo siguen diciendo lo mismo — que es el punto.
  *
  * Los colores son los de la paleta de estado de Supabase, no los rojos y
  * ámbares por defecto de Tailwind: mantienen la cohesión con el resto.
  */
-export function getExpiryStatus(expiryDate: string, now: Date = new Date()): ExpiryStatus {
+export function getExpiryStatus(
+  expiryDate: string,
+  now: Date = new Date(),
+  leadTimeMonths: number = ANTELACION_POR_DEFECTO,
+): ExpiryStatus {
   const daysRemaining = daysUntil(expiryDate, now);
+  const { abre, cierra } = cortesSemaforo(leadTimeMonths, now);
 
   const danger = {
     pill: "border-destructive/30 bg-destructive/10 text-destructive",
@@ -112,7 +156,7 @@ export function getExpiryStatus(expiryDate: string, now: Date = new Date()): Exp
     };
   }
 
-  if (daysRemaining < WINDOW_CLOSING_DAYS) {
+  if (daysRemaining < cierra) {
     return {
       level: "critical",
       daysRemaining,
@@ -126,7 +170,7 @@ export function getExpiryStatus(expiryDate: string, now: Date = new Date()): Exp
     };
   }
 
-  if (daysRemaining <= WINDOW_OPENS_DAYS) {
+  if (daysRemaining <= abre) {
     return {
       level: "warning",
       daysRemaining,

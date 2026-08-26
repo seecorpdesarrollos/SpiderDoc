@@ -16,12 +16,15 @@ export function DashboardClient({
   limit,
   loadError,
   formato,
+  antelacion,
 }: {
   email: string;
   initialDocuments: DocumentWithUrl[];
   limit: number;
   loadError: string | null;
   formato: FormatoCaducidad;
+  /** Meses de antelación elegidos por el usuario. Define los cortes del semáforo. */
+  antelacion: number;
 }) {
   const router = useRouter();
   const [uploadOpen, setUploadOpen] = useState(false);
@@ -56,12 +59,12 @@ export function DashboardClient({
     let red = 0;
     let amber = 0;
     for (const doc of documents) {
-      const level = getExpiryStatus(doc.expiry_date, now).level;
+      const level = getExpiryStatus(doc.expiry_date, now, antelacion).level;
       if (level === "expired" || level === "critical") red += 1;
       else if (level === "warning") amber += 1;
     }
     return { red, amber };
-  }, [documents]);
+  }, [documents, antelacion]);
 
   function handleAdd() {
     if (atLimit) setLimitOpen(true);
@@ -161,6 +164,7 @@ export function DashboardClient({
                   key={doc.id}
                   indice={i}
                   formato={formato}
+                  antelacion={antelacion}
                   document={doc}
                   onDelete={() => handleDelete(doc.id)}
                   onChanged={() => router.refresh()}

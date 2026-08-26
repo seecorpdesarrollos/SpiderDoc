@@ -54,6 +54,15 @@ export default async function DashboardPage() {
   // primera, sin cambiar de aspecto un instante después de cargar.
   const formato = parseFormato((await cookies()).get(COOKIE_FORMATO)?.value);
 
+  // La antelación decide también los colores del semáforo, no solo cuándo se
+  // manda el correo. Si no se pasara, la tarjeta y el aviso dirían cosas
+  // distintas del mismo documento.
+  const { data: perfil } = await supabase
+    .from("profiles")
+    .select("lead_time_months")
+    .eq("id", user.id)
+    .single();
+
   return (
     <DashboardClient
       email={user.email ?? ""}
@@ -61,6 +70,7 @@ export default async function DashboardPage() {
       limit={FREE_DOCUMENT_LIMIT}
       loadError={error?.message ?? null}
       formato={formato}
+      antelacion={perfil?.lead_time_months ?? 6}
     />
   );
 }
