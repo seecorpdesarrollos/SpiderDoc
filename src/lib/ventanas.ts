@@ -79,3 +79,24 @@ export function urgenciaTramite(
   }
   return null;
 }
+
+/**
+ * Qué hacer, dicho por la aplicación y no por el catálogo.
+ *
+ * Las notas del catálogo son **hechos**: "el consulado italiano no acepta
+ * renovar hasta 6 meses antes". Un hecho es verdad siempre, así que se puede
+ * enseñar en cualquier estado sin mirar el calendario.
+ *
+ * La instrucción es otra cosa. "Pedí cita en cuanto se abra la ventana" solo
+ * vale mientras la ventana esté cerrada; a 28 días de caducar lleva cinco
+ * meses abierta y la frase pasa a ser falsa —y encima tranquilizadora, que es
+ * el peor error que puede cometer esta aplicación—. Por eso la acción se
+ * calcula aquí, a partir del estado real, y nunca se guarda como texto fijo.
+ */
+export function accionSugerida(urgencia: Urgencia): string | null {
+  if (!urgencia) return null;
+  if (urgencia.tipo === "tarde") {
+    return "Pedí cita hoy y contá con pasar un tiempo sin el documento en vigor.";
+  }
+  return "Pedí cita esta semana: el plazo no cuenta la espera hasta conseguirla.";
+}

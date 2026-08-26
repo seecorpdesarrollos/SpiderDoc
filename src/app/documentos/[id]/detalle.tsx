@@ -11,7 +11,7 @@ import {
   etiquetaEnDias,
 } from "@/lib/expiry";
 import { documentTypeLabel, DOCUMENT_TYPES } from "@/lib/constants";
-import { urgenciaTramite, type Ventana } from "@/lib/ventanas";
+import { accionSugerida, urgenciaTramite, type Ventana } from "@/lib/ventanas";
 import type { FormatoCaducidad } from "@/lib/preferencias";
 import type { DocumentWithUrl } from "@/lib/types";
 
@@ -51,6 +51,7 @@ export function DocumentoDetalle({
 
   const status = getExpiryStatus(documento.expiry_date, new Date(), antelacion);
   const urgencia = urgenciaTramite(ventana, status.daysRemaining);
+  const accion = accionSugerida(urgencia);
   const esPdf = /\.pdf(\?|$)/i.test(documento.signed_url ?? "");
 
   const etiqueta =
@@ -158,7 +159,7 @@ export function DocumentoDetalle({
                 {urgencia.tipo === "tarde" ? "Vas tarde." : "Vas justo."}
               </strong>{" "}
               El trámite tarda unos {urgencia.diasTramite} días y quedan{" "}
-              {urgencia.diasRestantes}.
+              {urgencia.diasRestantes}. {accion}
               {ventana?.nota ? ` ${ventana.nota}` : ""}
             </span>
           </p>

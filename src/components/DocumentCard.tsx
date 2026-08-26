@@ -9,7 +9,7 @@ import {
   etiquetaEnDias,
 } from "@/lib/expiry";
 import type { FormatoCaducidad } from "@/lib/preferencias";
-import { urgenciaTramite, type Ventana } from "@/lib/ventanas";
+import { accionSugerida, urgenciaTramite, type Ventana } from "@/lib/ventanas";
 import { documentTypeLabel, DOCUMENT_TYPES } from "@/lib/constants";
 import type { DocumentWithUrl } from "@/lib/types";
 import { VisorArchivo } from "@/components/VisorArchivo";
@@ -46,6 +46,7 @@ export function DocumentCard({
 
   const status = getExpiryStatus(document.expiry_date, new Date(), antelacion);
   const urgencia = urgenciaTramite(ventana, status.daysRemaining);
+  const accion = accionSugerida(urgencia);
 
   async function save() {
     setSaving(true);
@@ -185,8 +186,7 @@ export function DocumentCard({
                       {urgencia.tipo === "tarde" ? "Vas tarde." : "Vas justo."}
                     </strong>{" "}
                     El trámite tarda unos {urgencia.diasTramite} días y quedan{" "}
-                    {urgencia.diasRestantes}.
-                    {ventana?.nota ? ` ${ventana.nota}` : ""}
+                    {urgencia.diasRestantes}. {accion}
                   </span>
                 </p>
               )}
