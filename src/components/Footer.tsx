@@ -12,7 +12,10 @@ export function Footer() {
 
   return (
     <footer className="hairline-t mt-auto">
-      <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-2 px-6 py-4 text-xs text-fg-lighter">
+      {/* En móvil la navegación va fija abajo, así que el pie necesita hueco
+          por debajo o queda tapado. La franja de gestos del iPhone también
+          cuenta. */}
+      <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-2 px-6 pt-4 pb-[calc(72px+env(safe-area-inset-bottom))] text-xs text-fg-lighter md:pb-4">
         <span>Spiderjad SL</span>
         <span className="font-mono tabular-nums">
           v{version} · {commit}

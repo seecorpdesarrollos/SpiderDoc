@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { getExpiryStatus, formatExpiryDate } from "@/lib/expiry";
+import { getExpiryStatus, formatExpiryDate, estadoCorto } from "@/lib/expiry";
+import type { FormatoCaducidad } from "@/lib/preferencias";
 import { documentTypeLabel, DOCUMENT_TYPES } from "@/lib/constants";
 import type { DocumentWithUrl } from "@/lib/types";
 import { VisorArchivo } from "@/components/VisorArchivo";
@@ -10,10 +11,16 @@ export function DocumentCard({
   document,
   onDelete,
   onChanged,
+  indice = 0,
+  formato = "ambos",
 }: {
   document: DocumentWithUrl;
   onDelete: () => void;
   onChanged: () => void;
+  /** Posición en la lista, para escalonar la entrada. */
+  indice?: number;
+  /** Cómo mostrar la caducidad. Ver src/lib/preferencias.ts */
+  formato?: FormatoCaducidad;
 }) {
   const [editing, setEditing] = useState(false);
   const [viendoArchivo, setViendoArchivo] = useState(false);
@@ -50,7 +57,10 @@ export function DocumentCard({
   }
 
   return (
-    <li className="card-surface">
+    <li
+      className="card-surface entrada-lista"
+      style={{ "--i": indice } as React.CSSProperties}
+    >
       <div className="flex">
         <div className={`w-0.5 shrink-0 ${status.bar}`} aria-hidden />
 
@@ -115,15 +125,17 @@ export function DocumentCard({
                   <h3 className="mt-1.5 truncate font-heading text-base font-semibold text-foreground">
                     {document.title}
                   </h3>
-                  <p className="mt-0.5 text-sm text-fg-light">
-                    {formatExpiryDate(document.expiry_date)}
-                  </p>
+                  {formato !== "relativo" && (
+                    <p className="mt-0.5 text-sm text-fg-light">
+                      {formatExpiryDate(document.expiry_date)}
+                    </p>
+                  )}
                 </div>
 
                 <span
                   className={`shrink-0 rounded-md border px-2 py-1 text-xs font-medium whitespace-nowrap ${status.pill}`}
                 >
-                  {status.label}
+                  {formato === "fecha" ? estadoCorto(status.level) : status.label}
                 </span>
               </div>
 

@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { DOCUMENTS_BUCKET, FREE_DOCUMENT_LIMIT } from "@/lib/constants";
 import type { DocumentRow, DocumentWithUrl } from "@/lib/types";
+import { cookies } from "next/headers";
+import { COOKIE_FORMATO, parseFormato } from "@/lib/preferencias";
 import { DashboardClient } from "./dashboard-client";
 
 export const dynamic = "force-dynamic";
@@ -34,12 +36,17 @@ export default async function DashboardPage() {
     }),
   );
 
+  // El formato sale del servidor para que la lista se pinte bien a la
+  // primera, sin cambiar de aspecto un instante después de cargar.
+  const formato = parseFormato((await cookies()).get(COOKIE_FORMATO)?.value);
+
   return (
     <DashboardClient
       email={user.email ?? ""}
       initialDocuments={documents}
       limit={FREE_DOCUMENT_LIMIT}
       loadError={error?.message ?? null}
+      formato={formato}
     />
   );
 }

@@ -56,13 +56,30 @@ export function daysUntil(expiryDate: string, now: Date = new Date()): number {
  */
 export function humanizeDays(days: number): string {
   const n = Math.abs(days);
+
   if (n < WINDOW_CLOSING_DAYS) return n === 1 ? "1 día" : `${n} días`;
+
   if (n < 730) {
     const months = Math.round(n / 30.44);
     return months === 1 ? "1 mes" : `${months} meses`;
   }
+
+  // Por encima de dos años NO basta con los años a secas. Un carnet que caduca
+  // el 31/01/2029 visto desde agosto de 2026 son 2 años y 5 meses; decir
+  // "2 años" se come cinco meses enteros y suena a dato exacto cuando no lo
+  // es. En una aplicación cuya única promesa es avisar a tiempo, eso no vale.
   const years = Math.floor(n / 365.25);
-  return years === 1 ? "1 año" : `${years} años`;
+  const restoMeses = Math.round((n - years * 365.25) / 30.44);
+
+  // El redondeo del resto puede dar 12: entonces es un año más y cero meses.
+  const anios = restoMeses === 12 ? years + 1 : years;
+  const meses = restoMeses === 12 ? 0 : restoMeses;
+
+  const textoAnios = anios === 1 ? "1 año" : `${anios} años`;
+  if (meses === 0) return textoAnios;
+
+  const textoMeses = meses === 1 ? "1 mes" : `${meses} meses`;
+  return `${textoAnios} y ${textoMeses}`;
 }
 
 /**
@@ -128,6 +145,24 @@ export function getExpiryStatus(expiryDate: string, now: Date = new Date()): Exp
     bar: "bg-brand-500",
     dot: "bg-brand",
   };
+}
+
+/**
+ * Una palabra para el estado, cuando el usuario prefiere ver la fecha exacta
+ * y no la cuenta atrás. La píldora sigue haciendo de semáforo: el color es lo
+ * que se lee de un vistazo, el texto solo lo confirma.
+ */
+export function estadoCorto(level: ExpiryLevel): string {
+  switch (level) {
+    case "expired":
+      return "Caducado";
+    case "critical":
+      return "Urgente";
+    case "warning":
+      return "Renovar ya";
+    default:
+      return "Vigente";
+  }
 }
 
 const MONTHS_ES = [

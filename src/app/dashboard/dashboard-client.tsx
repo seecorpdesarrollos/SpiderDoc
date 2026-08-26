@@ -2,24 +2,26 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Wordmark } from "@/components/Wordmark";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { DocumentCard } from "@/components/DocumentCard";
 import { UploadDialog } from "@/components/UploadDialog";
 import { LimitModal } from "@/components/LimitModal";
+import { AppShell } from "@/components/AppShell";
 import { getExpiryStatus } from "@/lib/expiry";
 import type { DocumentWithUrl } from "@/lib/types";
+import type { FormatoCaducidad } from "@/lib/preferencias";
 
 export function DashboardClient({
   email,
   initialDocuments,
   limit,
   loadError,
+  formato,
 }: {
   email: string;
   initialDocuments: DocumentWithUrl[];
   limit: number;
   loadError: string | null;
+  formato: FormatoCaducidad;
 }) {
   const router = useRouter();
   const [uploadOpen, setUploadOpen] = useState(false);
@@ -85,24 +87,7 @@ export function DashboardClient({
   }
 
   return (
-    <div className="min-h-dvh">
-      <header className="hairline-b sticky top-0 z-20 bg-background/90 backdrop-blur">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-3">
-          <Wordmark />
-          <div className="flex items-center gap-3">
-            <span className="hidden text-xs text-fg-lighter sm:inline">
-              {email}
-            </span>
-            <ThemeToggle />
-            <form action="/auth/signout" method="post">
-              <button type="submit" className="btn-default px-2.5 py-1 text-xs">
-                Salir
-              </button>
-            </form>
-          </div>
-        </div>
-      </header>
-
+    <AppShell email={email}>
       <div className="mx-auto max-w-3xl px-6 py-8 pb-28">
         <section className="card-surface">
           <div className="hairline-b flex flex-wrap items-center justify-between gap-4 px-4 py-3">
@@ -147,9 +132,11 @@ export function DashboardClient({
             <EmptyState onAdd={handleAdd} />
           ) : (
             <ul className="space-y-2">
-              {documents.map((doc) => (
+              {documents.map((doc, i) => (
                 <DocumentCard
                   key={doc.id}
+                  indice={i}
+                  formato={formato}
                   document={doc}
                   onDelete={() => handleDelete(doc.id)}
                   onChanged={() => router.refresh()}
@@ -177,7 +164,7 @@ export function DashboardClient({
       {limitOpen && (
         <LimitModal limit={limit} onClose={() => setLimitOpen(false)} />
       )}
-    </div>
+    </AppShell>
   );
 }
 

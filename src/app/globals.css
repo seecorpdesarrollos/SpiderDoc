@@ -262,6 +262,10 @@
   border-top: 1px solid var(--border);
 }
 
+@utility hairline-r {
+  border-right: 1px solid var(--border);
+}
+
 @utility overlay-scrim {
   background-color: var(--overlay);
 }
@@ -389,4 +393,56 @@
 }
 :root[data-theme="light"] .light-icon {
   display: block;
+}
+
+/* ---------------------------------------------------------------------------
+   Entrada de las tarjetas
+   ---------------------------------------------------------------------------
+   La lista aparecía de golpe, toda a la vez y sin aviso. Con una aparición
+   escalonada la vista se lee de arriba abajo, que es el orden que importa:
+   arriba está lo que caduca antes.
+
+   El retardo lo pone cada tarjeta con --i (ver DocumentCard). Se corta a los
+   ocho elementos para que una lista larga no tarde un segundo en terminar de
+   pintarse.
+
+   prefers-reduced-motion no es opcional: hay gente a la que este tipo de
+   animación le provoca mareo, y el sistema operativo ya lo sabe. */
+@keyframes entrada-tarjeta {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.entrada-lista {
+  animation: entrada-tarjeta 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(min(var(--i, 0), 8) * 45ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .entrada-lista {
+    animation: none;
+  }
+}
+
+/* Esqueleto de carga: el pulso indica "esto va a llegar", frente a un hueco
+   vacío que no dice nada. */
+@keyframes pulso-esqueleto {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.45; }
+}
+
+.esqueleto {
+  background: var(--border);
+  border-radius: 6px;
+  animation: pulso-esqueleto 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .esqueleto { animation: none; }
 }

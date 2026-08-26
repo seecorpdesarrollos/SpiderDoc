@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 type CookieToSet = { name: string; value: string; options: CookieOptions };
 
 /** Rutas que exigen sesión iniciada. */
-const PROTECTED_PREFIXES = ["/dashboard"];
+const PROTECTED_PREFIXES = ["/dashboard", "/ajustes"];
 
 /**
  * Refresca el token de Supabase en cada petición y protege /dashboard.

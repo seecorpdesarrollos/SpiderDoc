@@ -30,6 +30,7 @@ export function VisorArchivo({
   onCerrar: () => void;
 }) {
   const [error, setError] = useState(false);
+  const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
     function alPulsar(e: KeyboardEvent) {
@@ -86,7 +87,7 @@ export function VisorArchivo({
       <div
         // El clic dentro no cierra: si no, ampliar la foto la haría desaparecer.
         onClick={(e) => e.stopPropagation()}
-        className="flex flex-1 items-center justify-center overflow-auto px-4 pb-4"
+        className="relative flex flex-1 items-center justify-center overflow-auto px-4 pb-4"
       >
         {error ? (
           <div className="max-w-xs text-center">
@@ -100,16 +101,38 @@ export function VisorArchivo({
           <iframe
             src={url}
             title={`Archivo de ${titulo}`}
+            onLoad={() => setCargando(false)}
             className="h-full w-full rounded-lg bg-white"
           />
         ) : (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img
-            src={url}
-            alt={`Archivo de ${titulo}`}
-            onError={() => setError(true)}
-            className="max-h-full max-w-full rounded-lg object-contain"
-          />
+          <>
+            {/* La foto de un documento pesa, y sobre todo la URL viene firmada
+                y hay que ir a buscarla al almacenamiento. Sin esto la pantalla
+                se queda negra y vacía unos segundos, que es exactamente lo que
+                parece una app rota. */}
+            {cargando && (
+              <div className="flex flex-col items-center gap-3">
+                <span
+                  className="h-8 w-8 animate-spin rounded-full border-2 border-white/25 border-t-white/90"
+                  aria-hidden
+                />
+                <p className="text-xs text-white/60">Cargando el archivo…</p>
+              </div>
+            )}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={url}
+              alt={`Archivo de ${titulo}`}
+              onLoad={() => setCargando(false)}
+              onError={() => {
+                setCargando(false);
+                setError(true);
+              }}
+              className={`max-h-full max-w-full rounded-lg object-contain transition-opacity duration-300 ${
+                cargando ? "absolute opacity-0" : "opacity-100"
+              }`}
+            />
+          </>
         )}
       </div>
     </div>
