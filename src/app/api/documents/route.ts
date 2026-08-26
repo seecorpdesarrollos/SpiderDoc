@@ -48,6 +48,12 @@ export async function POST(request: NextRequest) {
   const expiryDate = String(formData.get("expiry_date") ?? "").trim();
   const notes = String(formData.get("notes") ?? "").trim() || null;
 
+  // El país emisor lo lee el OCR. Se normaliza a tres letras mayúsculas y se
+  // descarta cualquier otra cosa: es una clave del catálogo de ventanas, no
+  // texto libre, y una fila con "Argentina" en vez de "ARG" no cruzaría.
+  const paisCrudo = String(formData.get("issuing_country") ?? "").trim().toUpperCase();
+  const issuingCountry = /^[A-Z]{3}$/.test(paisCrudo) ? paisCrudo : null;
+
   if (!title) {
     return NextResponse.json(
       { error: "Poné un nombre al documento." },
@@ -111,6 +117,7 @@ export async function POST(request: NextRequest) {
       title,
       document_type: documentType,
       expiry_date: expiryDate,
+      issuing_country: issuingCountry,
       file_path: filePath,
       notes,
     })

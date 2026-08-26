@@ -4,6 +4,7 @@ import { DOCUMENTS_BUCKET, FREE_DOCUMENT_LIMIT } from "@/lib/constants";
 import type { DocumentRow, DocumentWithUrl } from "@/lib/types";
 import { cookies } from "next/headers";
 import { COOKIE_FORMATO, parseFormato } from "@/lib/preferencias";
+import type { Ventana } from "@/lib/ventanas";
 import { DashboardClient } from "./dashboard-client";
 
 export const dynamic = "force-dynamic";
@@ -63,6 +64,14 @@ export default async function DashboardPage() {
     .eq("id", user.id)
     .single();
 
+  // El catálogo entero: son una veintena de filas y no cambia, así que sale
+  // más barato traerlo de una vez que consultar por documento.
+  const { data: ventanasData } = await supabase
+    .from("renewal_windows")
+    .select("document_type, country, meses_aviso, dias_tramite, nota, verificado");
+
+  const ventanas = (ventanasData ?? []) as Ventana[];
+
   return (
     <DashboardClient
       email={user.email ?? ""}
@@ -71,6 +80,7 @@ export default async function DashboardPage() {
       loadError={error?.message ?? null}
       formato={formato}
       antelacion={perfil?.lead_time_months ?? 6}
+      ventanas={ventanas}
     />
   );
 }

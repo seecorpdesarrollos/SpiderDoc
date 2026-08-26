@@ -3,6 +3,8 @@ export type DocumentRow = {
   user_id: string;
   title: string;
   document_type: string;
+  /** Código de 3 letras del país emisor. Media clave del catálogo de ventanas. */
+  issuing_country: string | null;
   expiry_date: string; // YYYY-MM-DD
   file_path: string;
   created_at: string;

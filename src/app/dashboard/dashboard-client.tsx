@@ -9,6 +9,7 @@ import { AppShell } from "@/components/AppShell";
 import { getExpiryStatus } from "@/lib/expiry";
 import type { DocumentWithUrl } from "@/lib/types";
 import type { FormatoCaducidad } from "@/lib/preferencias";
+import { ventanaDe, type Ventana } from "@/lib/ventanas";
 
 export function DashboardClient({
   email,
@@ -17,6 +18,7 @@ export function DashboardClient({
   loadError,
   formato,
   antelacion,
+  ventanas,
 }: {
   email: string;
   initialDocuments: DocumentWithUrl[];
@@ -25,6 +27,8 @@ export function DashboardClient({
   formato: FormatoCaducidad;
   /** Meses de antelación elegidos por el usuario. Define los cortes del semáforo. */
   antelacion: number;
+  /** Catálogo de ventanas de trámite por documento y país. */
+  ventanas: Ventana[];
 }) {
   const router = useRouter();
   const [uploadOpen, setUploadOpen] = useState(false);
@@ -165,6 +169,7 @@ export function DashboardClient({
                   indice={i}
                   formato={formato}
                   antelacion={antelacion}
+                  ventana={ventanaDe(ventanas, doc.document_type, doc.issuing_country)}
                   document={doc}
                   onDelete={() => handleDelete(doc.id)}
                   onChanged={() => router.refresh()}

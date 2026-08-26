@@ -25,6 +25,14 @@ export function UploadDialog({
   const [title, setTitle] = useState("");
   const [docType, setDocType] = useState<string>("dni");
   const [expiry, setExpiry] = useState("");
+  /**
+   * País emisor leído por el OCR.
+   *
+   * No se enseña ni se edita: el usuario no tiene por qué saber que existe.
+   * Pero es media clave del catálogo de ventanas — un pasaporte argentino y
+   * uno español no se renuevan igual — así que se guarda con el documento.
+   */
+  const [pais, setPais] = useState<string | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -61,6 +69,8 @@ export function UploadDialog({
         setStep("review");
         return;
       }
+
+      if (body.issuing_country) setPais(body.issuing_country);
 
       if (body.expiry_date) {
         setExpiry(body.expiry_date);
@@ -101,6 +111,7 @@ export function UploadDialog({
     formData.append("title", title.trim() || documentTypeLabel(docType));
     formData.append("document_type", docType);
     formData.append("expiry_date", expiry);
+    if (pais) formData.append("issuing_country", pais);
 
     const res = await fetch("/api/documents", {
       method: "POST",

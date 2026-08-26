@@ -8,6 +8,7 @@ import {
   etiquetaEnDias,
 } from "@/lib/expiry";
 import type { FormatoCaducidad } from "@/lib/preferencias";
+import { urgenciaTramite, type Ventana } from "@/lib/ventanas";
 import { documentTypeLabel, DOCUMENT_TYPES } from "@/lib/constants";
 import type { DocumentWithUrl } from "@/lib/types";
 import { VisorArchivo } from "@/components/VisorArchivo";
@@ -19,6 +20,7 @@ export function DocumentCard({
   indice = 0,
   formato = "ambos",
   antelacion = 6,
+  ventana = null,
 }: {
   document: DocumentWithUrl;
   onDelete: () => void;
@@ -29,6 +31,8 @@ export function DocumentCard({
   formato?: FormatoCaducidad;
   /** Meses de antelación del usuario: define los cortes del semáforo. */
   antelacion?: number;
+  /** Ficha de trámite de este documento, si el catálogo tiene una. */
+  ventana?: Ventana | null;
 }) {
   const [editing, setEditing] = useState(false);
   const [viendoArchivo, setViendoArchivo] = useState(false);
@@ -40,6 +44,7 @@ export function DocumentCard({
   const [error, setError] = useState<string | null>(null);
 
   const status = getExpiryStatus(document.expiry_date, new Date(), antelacion);
+  const urgencia = urgenciaTramite(ventana, status.daysRemaining);
 
   async function save() {
     setSaving(true);
@@ -150,6 +155,29 @@ export function DocumentCard({
                       : status.label}
                 </span>
               </div>
+
+              {/* Lo que un semáforo no puede decir: si el margen alcanza para
+                  el trámite. "Rojo" avisa de que queda poco; "el trámite tarda
+                  90 días y quedan 63" avisa de que ya no llegás. */}
+              {urgencia && (
+                <p
+                  className={`mt-3 flex gap-2 rounded-md border px-2.5 py-2 text-xs leading-relaxed ${
+                    urgencia.tipo === "tarde"
+                      ? "border-destructive/30 bg-destructive/8 text-destructive"
+                      : "border-warning/30 bg-warning/8 text-warning"
+                  }`}
+                >
+                  <span aria-hidden>{urgencia.tipo === "tarde" ? "⚠" : "!"}</span>
+                  <span>
+                    <strong className="font-semibold">
+                      {urgencia.tipo === "tarde" ? "Vas tarde." : "Vas justo."}
+                    </strong>{" "}
+                    El trámite tarda unos {urgencia.diasTramite} días y quedan{" "}
+                    {urgencia.diasRestantes}.
+                    {ventana?.nota ? ` ${ventana.nota}` : ""}
+                  </span>
+                </p>
+              )}
 
               <div className="mt-3 flex flex-wrap items-center gap-3 text-xs">
                 {document.signed_url && (
