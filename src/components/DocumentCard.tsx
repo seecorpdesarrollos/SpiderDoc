@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   getExpiryStatus,
   formatExpiryDate,
@@ -71,7 +72,7 @@ export function DocumentCard({
 
   return (
     <li
-      className="card-surface entrada-lista"
+      className="card-surface entrada-lista relative transition-colors hover:bg-surface-200/40"
       style={{ "--i": indice } as React.CSSProperties}
     >
       <div className="flex">
@@ -135,8 +136,19 @@ export function DocumentCard({
                   <p className="heading-meta text-fg-lighter">
                     {documentTypeLabel(document.document_type)}
                   </p>
+                  {/* Enlace estirado: el <a> es solo el título, pero su
+                      ::after cubre la tarjeta entera, así que se puede tocar
+                      en cualquier punto. Envolver toda la tarjeta en un enlace
+                      dejaría los botones de Editar y Borrar dentro de él, que
+                      no es válido y en el móvil dispara los dos a la vez.
+                      Los botones van con z-10 para quedar por encima. */}
                   <h3 className="mt-1.5 truncate font-heading text-base font-semibold text-foreground">
-                    {document.title}
+                    <Link
+                      href={`/documentos/${document.id}`}
+                      className="focus-ring rounded after:absolute after:inset-0 after:content-['']"
+                    >
+                      {document.title}
+                    </Link>
                   </h3>
                   {formato !== "relativo" && (
                     <p className="mt-0.5 text-sm text-fg-light">
@@ -161,7 +173,7 @@ export function DocumentCard({
                   90 días y quedan 63" avisa de que ya no llegás. */}
               {urgencia && (
                 <p
-                  className={`mt-3 flex gap-2 rounded-md border px-2.5 py-2 text-xs leading-relaxed ${
+                  className={`relative z-10 mt-3 flex gap-2 rounded-md border px-2.5 py-2 text-xs leading-relaxed ${
                     urgencia.tipo === "tarde"
                       ? "border-destructive/30 bg-destructive/8 text-destructive"
                       : "border-warning/30 bg-warning/8 text-warning"
@@ -179,7 +191,7 @@ export function DocumentCard({
                 </p>
               )}
 
-              <div className="mt-3 flex flex-wrap items-center gap-3 text-xs">
+              <div className="relative z-10 mt-3 flex flex-wrap items-center gap-3 text-xs">
                 {document.signed_url && (
                   <button
                     type="button"

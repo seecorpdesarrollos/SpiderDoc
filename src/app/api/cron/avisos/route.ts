@@ -1,7 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { enviarEmail } from "@/lib/resend";
-import { asuntoAviso, cuerpoAviso, type AvisoPendiente } from "@/lib/avisos";
+import {
+  asuntoAviso,
+  cuerpoAviso,
+  enlaceDocumento,
+  type AvisoPendiente,
+} from "@/lib/avisos";
 import { enviarPush, pushConfigurado } from "@/lib/push";
 import { formatExpiryDate } from "@/lib/expiry";
 
@@ -135,7 +140,7 @@ export async function GET(request: NextRequest) {
         const resultadoPush = await enviarPush(destino, {
           titulo: asuntoPush(aviso.days_left),
           cuerpo: `${aviso.title} caduca el ${formatExpiryDate(aviso.expiry_date)}.`,
-          url: "/dashboard",
+          url: enlaceDocumento(aviso.document_id),
           // Un aviso por documento: si llega otro del mismo, reemplaza al
           // anterior en vez de apilarse.
           tag: `doc-${aviso.document_id}`,
