@@ -14,6 +14,21 @@ import { ProbarAviso } from "@/components/ProbarAviso";
 import { ActivarPush } from "@/components/ActivarPush";
 import { BorrarCuenta } from "@/components/BorrarCuenta";
 
+/**
+ * Los tres escalones que salen de una antelación dada.
+ *
+ * Replica exactamente lo que hace pending_notifications() en SQL: la
+ * antelación, su mitad con división entera, y un mes. Con antelaciones cortas
+ * los tres colapsan —con 3 meses salen 3, 1 y 1— y por eso se deduplican
+ * también aquí: si la pantalla prometiera tres avisos y solo llegaran dos,
+ * sería la app la que miente.
+ */
+function escalones(meses: number): number[] {
+  const lead = Math.min(Math.max(Math.round(meses), 1), 24);
+  const unicos = new Set([lead, Math.max(Math.floor(lead / 2), 1), 1]);
+  return [...unicos].sort((a, b) => b - a);
+}
+
 /** Opciones de antelación. Ver el porqué de cada una en el texto de ayuda. */
 const ANTELACIONES = [
   { meses: 3, etiqueta: "3 meses" },
@@ -94,8 +109,7 @@ export function AjustesClient({
           Con cuánta antelación querés que te avisemos
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-fg-light">
-          Recibirás un correo al llegar a esta antelación, otro a la mitad, y un
-          último aviso a un mes.
+          Te avisamos al llegar a esta antelación, a la mitad, y un mes antes.
         </p>
 
         <div className="mt-4 flex flex-wrap gap-2">
@@ -119,6 +133,18 @@ export function AjustesClient({
             );
           })}
         </div>
+
+        <p className="mt-4 text-sm text-fg-light">
+          Con esta antelación recibirás{" "}
+          <strong className="font-medium text-foreground">
+            {escalones(antelacion).length} avisos
+          </strong>{" "}
+          de cada documento:{" "}
+          {escalones(antelacion)
+            .map((m) => (m === 1 ? "1 mes" : `${m} meses`))
+            .join(", ")}{" "}
+          antes de que caduque.
+        </p>
 
         <p className="mt-4 border-l-2 border-border pl-3 text-xs leading-relaxed text-fg-lighter">
           Seis meses es lo razonable si tenés documentación de otro país: el
