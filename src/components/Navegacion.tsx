@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useLinkStatus } from "next/link";
 import { Wordmark } from "@/components/Wordmark";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -60,6 +61,69 @@ function Icono({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ * Señal de que el toque SÍ entró.
+ *
+ * Estas páginas se generan en el servidor y tardan. Sin una respuesta
+ * inmediata, tocás y no pasa nada durante segundos: parece que la app se ha
+ * colgado y volvés a tocar. useLinkStatus sabe si la navegación está en curso
+ * y lo dice sin esperar a que llegue nada.
+ */
+function Pendiente() {
+  const { pending } = useLinkStatus();
+  if (!pending) return null;
+  return (
+    <span
+      className="absolute inset-x-0 top-0 h-0.5 overflow-hidden bg-brand/25"
+      aria-hidden
+    >
+      <span className="block h-full w-1/3 animate-[barrido_900ms_ease-in-out_infinite] bg-brand" />
+    </span>
+  );
+}
+
+/**
+ * Cuántos documentos piden atención.
+ *
+ * Estaba dentro del panel, así que en cuanto bajabas un poco dejaba de verse.
+ * Aquí vive en la navegación: siempre visible, en las dos pantallas. Es el
+ * dato por el que uno abre esta app.
+ */
+export function Contadores({
+  resumen,
+}: {
+  resumen: { rojos: number; ambar: number };
+}) {
+  const nada = resumen.rojos === 0 && resumen.ambar === 0;
+
+  if (nada) {
+    return (
+      <span className="text-xs text-fg-lighter">Todo en regla</span>
+    );
+  }
+
+  return (
+    <span className="flex items-center gap-3 text-xs">
+      {resumen.rojos > 0 && (
+        <span className="flex items-baseline gap-1.5">
+          <span className="font-medium tabular-nums text-destructive">
+            {resumen.rojos}
+          </span>
+          <span className="text-fg-lighter">urgentes</span>
+        </span>
+      )}
+      {resumen.ambar > 0 && (
+        <span className="flex items-baseline gap-1.5">
+          <span className="font-medium tabular-nums text-warning">
+            {resumen.ambar}
+          </span>
+          <span className="text-fg-lighter">a renovar</span>
+        </span>
+      )}
+    </span>
+  );
+}
+
 export function NavegacionMovil() {
   const pathname = usePathname();
 
@@ -79,10 +143,11 @@ export function NavegacionMovil() {
               <Link
                 href={destino.href}
                 aria-current={activo ? "page" : undefined}
-                className={`focus-ring flex min-h-[56px] flex-col items-center justify-center gap-1 text-[11px] font-medium transition-colors ${
+                className={`focus-ring relative flex min-h-[56px] flex-col items-center justify-center gap-1 text-[11px] font-medium transition-colors active:bg-surface-200 ${
                   activo ? "text-brand-600" : "text-fg-lighter"
                 }`}
               >
+                <Pendiente />
                 <Icono>{destino.icono}</Icono>
                 {destino.etiqueta}
               </Link>
@@ -94,7 +159,13 @@ export function NavegacionMovil() {
   );
 }
 
-export function NavegacionEscritorio({ email }: { email: string }) {
+export function NavegacionEscritorio({
+  email,
+  resumen,
+}: {
+  email: string;
+  resumen?: { rojos: number; ambar: number };
+}) {
   const pathname = usePathname();
 
   return (
@@ -113,12 +184,13 @@ export function NavegacionEscritorio({ email }: { email: string }) {
                 <Link
                   href={destino.href}
                   aria-current={activo ? "page" : undefined}
-                  className={`focus-ring flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                  className={`focus-ring relative flex items-center gap-3 overflow-hidden rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                     activo
                       ? "bg-brand/10 text-brand-600"
                       : "text-fg-light hover:bg-surface-200 hover:text-foreground"
                   }`}
                 >
+                  <Pendiente />
                   <Icono>{destino.icono}</Icono>
                   {destino.etiqueta}
                 </Link>
@@ -127,6 +199,13 @@ export function NavegacionEscritorio({ email }: { email: string }) {
           })}
         </ul>
       </nav>
+
+      {resumen && (
+        <div className="hairline-t px-5 py-4">
+          <p className="heading-meta mb-2 text-fg-lighter">Tus documentos</p>
+          <Contadores resumen={resumen} />
+        </div>
+      )}
 
       <div className="hairline-t px-5 py-4">
         <p className="truncate text-xs text-fg-lighter" title={email}>

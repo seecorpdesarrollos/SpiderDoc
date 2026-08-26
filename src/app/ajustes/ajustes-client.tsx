@@ -9,6 +9,8 @@ import {
 } from "@/lib/preferencias";
 import { CompartirApp } from "@/components/CompartirApp";
 import { AppShell } from "@/components/AppShell";
+import { ComoInstalar } from "@/components/ComoInstalar";
+import { BorrarCuenta } from "@/components/BorrarCuenta";
 
 /** Opciones de antelación. Ver el porqué de cada una en el texto de ayuda. */
 const ANTELACIONES = [
@@ -175,6 +177,18 @@ export function AjustesClient({
         </p>
       </section>
 
+      {/* ---- Instalar ---- */}
+      <section className="card-surface mt-4 p-5">
+        <p className="heading-meta text-brand-600">Instalar</p>
+        <h2 className="mt-3 font-heading text-base font-semibold text-foreground">
+          Tenela como una app más
+        </h2>
+        <p className="mt-2 mb-4 text-sm leading-relaxed text-fg-light">
+          Se abre desde su icono, a pantalla completa y sin barra de navegador.
+        </p>
+        <ComoInstalar />
+      </section>
+
       {/* ---- Compartir ---- */}
       <section className="card-surface mt-4 p-5">
         <p className="heading-meta text-brand-600">Compartir</p>
@@ -191,13 +205,16 @@ export function AjustesClient({
       </section>
 
       {/* ---- Cuenta ---- */}
-      <section className="card-surface mt-4 p-5 md:hidden">
+      <section className="card-surface mt-4 p-5">
         <p className="heading-meta text-brand-600">Cuenta</p>
-        <form action="/auth/signout" method="post" className="mt-4">
+        <form action="/auth/signout" method="post" className="mt-4 md:hidden">
           <button type="submit" className="btn-default px-4 py-2.5 text-sm">
             Cerrar sesión
           </button>
         </form>
+        <div className="mt-5 border-t border-border pt-5">
+          <BorrarCuenta />
+        </div>
       </section>
     </div>
     </AppShell>

@@ -446,3 +446,10 @@
 @media (prefers-reduced-motion: reduce) {
   .esqueleto { animation: none; }
 }
+
+/* Barrido de la barra de "estoy yendo": no mide progreso —no lo sabemos—,
+   solo dice que algo está pasando. */
+@keyframes barrido {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}

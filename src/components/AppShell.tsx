@@ -2,7 +2,7 @@
 
 import { Wordmark } from "@/components/Wordmark";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { NavegacionMovil, NavegacionEscritorio } from "@/components/Navegacion";
+import { NavegacionMovil, NavegacionEscritorio, Contadores } from "@/components/Navegacion";
 
 /**
  * Esqueleto de la parte con sesión iniciada.
@@ -14,21 +14,29 @@ import { NavegacionMovil, NavegacionEscritorio } from "@/components/Navegacion";
  * pantalla es corta, y cada píxel gastado en cromo es un documento menos que
  * se ve sin desplazar. Lo que se toca a menudo está abajo.
  */
+export type Resumen = { rojos: number; ambar: number };
+
 export function AppShell({
   email,
+  resumen,
   children,
 }: {
   email: string;
+  /** Cuántos documentos piden atención. Solo lo pasa el panel. */
+  resumen?: Resumen;
   children: React.ReactNode;
 }) {
   return (
     <div className="flex min-h-dvh">
-      <NavegacionEscritorio email={email} />
+      <NavegacionEscritorio email={email} resumen={resumen} />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="hairline-b sticky top-0 z-20 flex items-center justify-between bg-background/90 px-5 py-2.5 backdrop-blur md:hidden">
+        <header className="hairline-b sticky top-0 z-20 flex items-center justify-between gap-3 bg-background/90 px-5 py-2.5 backdrop-blur md:hidden">
           <Wordmark />
-          <ThemeToggle />
+          <div className="flex items-center gap-3">
+            {resumen && <Contadores resumen={resumen} />}
+            <ThemeToggle />
+          </div>
         </header>
 
         <main className="flex-1">{children}</main>

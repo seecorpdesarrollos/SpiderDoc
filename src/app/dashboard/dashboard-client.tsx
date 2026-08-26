@@ -87,16 +87,9 @@ export function DashboardClient({
   }
 
   return (
-    <AppShell email={email}>
+    <AppShell email={email} resumen={{ rojos: summary.red, ambar: summary.amber }}>
       <div className="mx-auto max-w-3xl px-6 py-8 pb-28">
         <section className="card-surface">
-          <div className="hairline-b flex flex-wrap items-center justify-between gap-4 px-4 py-3">
-            <p className="heading-meta text-fg-lighter">Tus documentos</p>
-            <div className="flex items-center gap-4 text-xs">
-              <Stat value={summary.red} label="Urgentes" tone="text-destructive" />
-              <Stat value={summary.amber} label="Renovar ya" tone="text-warning" />
-            </div>
-          </div>
 
           <div className="flex flex-wrap items-end justify-between gap-4 p-4">
             <div>
@@ -168,22 +161,6 @@ export function DashboardClient({
   );
 }
 
-function Stat({
-  value,
-  label,
-  tone,
-}: {
-  value: number;
-  label: string;
-  tone: string;
-}) {
-  return (
-    <span className="flex items-baseline gap-1.5">
-      <span className={`font-medium tabular-nums ${tone}`}>{value}</span>
-      <span className="heading-meta text-fg-lighter">{label}</span>
-    </span>
-  );
-}
 
 function EmptyState({ onAdd }: { onAdd: () => void }) {
   return (

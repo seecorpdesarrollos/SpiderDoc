@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 /**
  * Visor del archivo del documento, dentro de la app.
@@ -31,6 +32,9 @@ export function VisorArchivo({
 }) {
   const [error, setError] = useState(false);
   const [cargando, setCargando] = useState(true);
+  const [montado, setMontado] = useState(false);
+
+  useEffect(() => setMontado(true), []);
 
   useEffect(() => {
     function alPulsar(e: KeyboardEvent) {
@@ -40,24 +44,41 @@ export function VisorArchivo({
 
     // Mientras el visor está abierto, el fondo no debe poder desplazarse:
     // en móvil, si no, se arrastra la lista por debajo de la imagen.
-    const overflowPrevio = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
     return () => {
       window.removeEventListener("keydown", alPulsar);
-      document.body.style.overflow = overflowPrevio;
+      // Se restaura a vacío, no al valor que hubiera antes. Guardar el valor
+      // previo parecía más correcto, pero si se abrían dos visores seguidos el
+      // segundo guardaba "hidden" y al cerrarlo dejaba la página sin scroll
+      // para siempre. Pasó en el móvil instalado y no había forma de salir
+      // salvo recargando.
+      document.body.style.overflow = "";
     };
   }, [onCerrar]);
 
   const esPdf = /\.pdf(\?|$)/i.test(url);
 
-  return (
+  if (!montado) return null;
+
+  /**
+   * Va en un portal, colgado directamente de <body>.
+   *
+   * Estaba dentro de la tarjeta, y aunque llevaba `fixed inset-0` se pintaba
+   * en miniatura entre dos documentos. El motivo: si algún elemento por encima
+   * tiene una transformación —y las tarjetas la tienen, por la animación de
+   * entrada— deja de valer la pantalla como referencia y pasa a valer ese
+   * elemento. El `fixed` se quedaba encerrado dentro de la tarjeta.
+   *
+   * Sacándolo a <body> no hay nada por encima que pueda encerrarlo.
+   */
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
       aria-label={`Archivo de ${titulo}`}
       onClick={onCerrar}
-      className="fixed inset-0 z-50 flex flex-col bg-black/80 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex flex-col bg-black/85 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] backdrop-blur-sm"
     >
       <div className="flex items-center justify-between gap-4 px-4 py-3">
         <p className="min-w-0 truncate text-sm font-medium text-white/90">
@@ -135,6 +156,7 @@ export function VisorArchivo({
           </>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
