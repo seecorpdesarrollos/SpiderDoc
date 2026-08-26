@@ -11,7 +11,7 @@
  * LEER una fecha no le importa a nadie más que a este navegador.
  */
 
-export type FormatoCaducidad = "relativo" | "fecha" | "ambos";
+export type FormatoCaducidad = "relativo" | "fecha" | "dias" | "ambos";
 
 export const COOKIE_FORMATO = "spiderjad-formato";
 export const COOKIE_FORMATO_MAX_AGE = 60 * 60 * 24 * 365;
@@ -36,10 +36,17 @@ export const FORMATOS: {
     etiqueta: "La fecha exacta",
     ejemplo: "31 de enero de 2029 · Vigente",
   },
+  {
+    valor: "dias",
+    etiqueta: "Los días que faltan",
+    ejemplo: "31 de enero de 2029 · Caduca en 889 días",
+  },
 ];
 
 export function parseFormato(valor: string | undefined | null): FormatoCaducidad {
-  return valor === "relativo" || valor === "fecha" ? valor : "ambos";
+  return valor === "relativo" || valor === "fecha" || valor === "dias"
+    ? valor
+    : "ambos";
 }
 
 export function guardarFormato(formato: FormatoCaducidad) {

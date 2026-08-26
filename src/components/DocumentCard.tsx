@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { getExpiryStatus, formatExpiryDate, estadoCorto } from "@/lib/expiry";
+import {
+  getExpiryStatus,
+  formatExpiryDate,
+  estadoCorto,
+  etiquetaEnDias,
+} from "@/lib/expiry";
 import type { FormatoCaducidad } from "@/lib/preferencias";
 import { documentTypeLabel, DOCUMENT_TYPES } from "@/lib/constants";
 import type { DocumentWithUrl } from "@/lib/types";
@@ -135,7 +140,11 @@ export function DocumentCard({
                 <span
                   className={`shrink-0 rounded-md border px-2 py-1 text-xs font-medium whitespace-nowrap ${status.pill}`}
                 >
-                  {formato === "fecha" ? estadoCorto(status.level) : status.label}
+                  {formato === "fecha"
+                    ? estadoCorto(status.level)
+                    : formato === "dias"
+                      ? etiquetaEnDias(status.daysRemaining)
+                      : status.label}
                 </span>
               </div>
 

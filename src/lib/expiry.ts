@@ -148,6 +148,23 @@ export function getExpiryStatus(expiryDate: string, now: Date = new Date()): Exp
 }
 
 /**
+ * La cuenta atrás en días exactos, para quien prefiere el número crudo.
+ *
+ * "889 días" se lee peor que "2 años y 5 meses" —hay que pararse a dividir—
+ * pero para plazos cortos es justo al revés, y hay gente que quiere el número
+ * y no una aproximación. Por eso es una opción y no el valor por defecto.
+ */
+export function etiquetaEnDias(daysRemaining: number): string {
+  if (daysRemaining < 0) {
+    const n = Math.abs(daysRemaining);
+    return n === 1 ? "Caducó ayer" : `Caducó hace ${n} días`;
+  }
+  if (daysRemaining === 0) return "Caduca hoy";
+  if (daysRemaining === 1) return "Caduca mañana";
+  return `Caduca en ${daysRemaining} días`;
+}
+
+/**
  * Una palabra para el estado, cuando el usuario prefiere ver la fecha exacta
  * y no la cuenta atrás. La píldora sigue haciendo de semáforo: el color es lo
  * que se lee de un vistazo, el texto solo lo confirma.
