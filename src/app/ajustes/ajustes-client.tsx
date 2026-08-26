@@ -11,6 +11,7 @@ import { CompartirApp } from "@/components/CompartirApp";
 import { AppShell } from "@/components/AppShell";
 import { ComoInstalar } from "@/components/ComoInstalar";
 import { ProbarAviso } from "@/components/ProbarAviso";
+import { ActivarPush } from "@/components/ActivarPush";
 import { BorrarCuenta } from "@/components/BorrarCuenta";
 
 /** Opciones de antelación. Ver el porqué de cada una en el texto de ayuda. */
@@ -201,6 +202,19 @@ export function AjustesClient({
           Se abre desde su icono, a pantalla completa y sin barra de navegador.
         </p>
         <ComoInstalar />
+      </section>
+
+      {/* ---- Push ---- */}
+      <section className="card-surface p-5">
+        <p className="heading-meta text-brand-600">Avisos en el móvil</p>
+        <h2 className="mt-3 font-heading text-base font-semibold text-foreground">
+          Que te suene, además del correo
+        </h2>
+        <p className="mt-2 mb-4 text-sm leading-relaxed text-fg-light">
+          El correo te llega igual. Esto es el empujón del momento, para que no
+          se te pase entre otros cien mensajes.
+        </p>
+        <ActivarPush />
       </section>
 
       {/* ---- Compartir ---- */}

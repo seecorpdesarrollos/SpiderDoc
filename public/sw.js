@@ -57,3 +57,63 @@ self.addEventListener("fetch", (event) => {
     fetch(request).catch(() => caches.match(OFFLINE_URL)),
   );
 });
+
+
+/* ---------------------------------------------------------------------------
+ * NOTIFICACIONES PUSH
+ * ---------------------------------------------------------------------------
+ * El navegador despierta este service worker cuando llega un aviso, incluso
+ * con la app cerrada. Es lo único que puede mostrar la notificación: la página
+ * puede no existir en ese momento.
+ *
+ * El contenido viene cifrado desde nuestro servidor y solo este navegador
+ * puede descifrarlo. Importa, porque el texto dice qué documento tenés.
+ */
+
+self.addEventListener("push", (event) => {
+  let datos = {};
+  try {
+    datos = event.data ? event.data.json() : {};
+  } catch {
+    // Si algún día llega un push sin JSON, mejor un aviso genérico que ninguno.
+  }
+
+  const titulo = datos.titulo || "Spiderjad Docs";
+  const opciones = {
+    body: datos.cuerpo || "Tenés un documento que necesita atención.",
+    icon: "/icon-192.png",
+    badge: "/icon-192.png",
+    // tag: si llegan dos avisos del mismo documento, el segundo reemplaza al
+    // primero en vez de apilarse. Nadie quiere seis notificaciones del mismo
+    // pasaporte.
+    tag: datos.tag || "spiderjad-aviso",
+    data: { url: datos.url || "/dashboard" },
+    // En móvil, que vibre: un aviso de caducidad que pasa desapercibido no
+    // sirve de nada.
+    vibrate: [80, 40, 80],
+  };
+
+  event.waitUntil(self.registration.showNotification(titulo, opciones));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const destino = (event.notification.data && event.notification.data.url) || "/dashboard";
+
+  event.waitUntil(
+    self.clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((ventanas) => {
+        // Si la app ya está abierta, se reutiliza esa ventana en vez de abrir
+        // otra. Abrir una segunda copia de la app al tocar un aviso es de las
+        // cosas que más delatan a una web disfrazada de aplicación.
+        for (const ventana of ventanas) {
+          if ("focus" in ventana) {
+            ventana.navigate(destino);
+            return ventana.focus();
+          }
+        }
+        return self.clients.openWindow(destino);
+      }),
+  );
+});

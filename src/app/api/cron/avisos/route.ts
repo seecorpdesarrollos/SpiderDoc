@@ -2,6 +2,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { enviarEmail } from "@/lib/resend";
 import { asuntoAviso, cuerpoAviso, type AvisoPendiente } from "@/lib/avisos";
+import { enviarPush, pushConfigurado } from "@/lib/push";
+import { formatExpiryDate } from "@/lib/expiry";
 
 /**
  * Cron diario de avisos de caducidad.
@@ -26,6 +28,13 @@ import { asuntoAviso, cuerpoAviso, type AvisoPendiente } from "@/lib/avisos";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
+
+/** El título del push, corto: en la pantalla de bloqueo no cabe más. */
+function asuntoPush(milestone: number): string {
+  if (milestone <= 1) return "Último aviso";
+  if (milestone <= 3) return "Se te cierra la ventana";
+  return "Ya podés renovarlo";
+}
 
 function noAutorizado() {
   // 404 y no 401: a un endpoint que no existe no se le insiste.
@@ -100,6 +109,39 @@ export async function GET(request: NextRequest) {
     }
 
     enviados += 1;
+
+    // ---- Push, además del correo ----
+    // El correo es el canal principal: se queda en la bandeja y se puede
+    // reenviar o retomar semanas después, que es lo que hace falta para un
+    // aviso con meses de horizonte. El push es el empujón del momento.
+    //
+    // Si falla, NO se aborta nada: el correo ya salió y ese es el compromiso.
+    if (pushConfigurado()) {
+      const { data: destinos } = await supabase.rpc("push_targets", {
+        p_document_id: aviso.document_id,
+      });
+
+      for (const destino of (destinos ?? []) as {
+        endpoint: string;
+        p256dh: string;
+        auth: string;
+      }[]) {
+        const resultadoPush = await enviarPush(destino, {
+          titulo: asuntoPush(aviso.milestone),
+          cuerpo: `${aviso.title} caduca el ${formatExpiryDate(aviso.expiry_date)}.`,
+          url: "/dashboard",
+          // Un aviso por documento: si llega otro del mismo, reemplaza al
+          // anterior en vez de apilarse.
+          tag: `doc-${aviso.document_id}`,
+        });
+
+        if (!resultadoPush.ok && resultadoPush.caducada) {
+          // Desinstalaron la app o revocaron el permiso. Se olvida, o el cron
+          // lo reintentaría cada día para siempre.
+          await supabase.rpc("push_forget", { p_endpoint: destino.endpoint });
+        }
+      }
+    }
 
     // El escalón enviado y los que quedaban por debajo, todos a la vez.
     const escalones = [
