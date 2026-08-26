@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DOCUMENT_TYPES, documentTypeLabel } from "@/lib/constants";
 import { formatExpiryDate, getExpiryStatus } from "@/lib/expiry";
 import { comprimirImagen, formatearBytes } from "@/lib/imagen";
@@ -39,11 +39,31 @@ export function UploadDialog({
 
   const inputRef = useRef<HTMLInputElement>(null);
 
+  /**
+   * Una URL de objeto mantiene el archivo vivo en memoria hasta que se libera
+   * o se recarga la página. Con fotos de varios megas y varias pruebas
+   * seguidas, eso se nota — sobre todo en un móvil.
+   */
+  useEffect(() => {
+    if (!preview) return;
+    return () => URL.revokeObjectURL(preview);
+  }, [preview]);
+
   async function handleFile(original: File) {
     setError(null);
     setScanNote(null);
     setPeso(null);
     setStep("scanning");
+
+    // La vista previa sale del archivo ORIGINAL y antes de comprimir. Dos
+    // motivos: aparece al instante en vez de después de procesar, y no depende
+    // del blob que produce el canvas — si la compresión falla o tarda, la
+    // miniatura se ve igual.
+    if (original.type.startsWith("image/")) {
+      setPreview(URL.createObjectURL(original));
+    } else {
+      setPreview(null);
+    }
 
     // Se aligera ANTES de analizar, no solo antes de guardar: así la versión
     // liviana es también la que viaja al OCR, y el análisis tarda menos y
@@ -54,9 +74,6 @@ export function UploadDialog({
     if (comprimida) setPeso({ antes: bytesAntes, despues: bytesDespues });
 
     setFile(selected);
-    setPreview(
-      selected.type.startsWith("image/") ? URL.createObjectURL(selected) : null,
-    );
 
     const formData = new FormData();
     formData.append("file", selected);
