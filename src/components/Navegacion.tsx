@@ -101,28 +101,61 @@ export function Contadores({
 
   if (nada) {
     return (
-      <span className="text-xs text-fg-lighter">Todo en regla</span>
+      <span className="flex items-center gap-1.5 text-xs text-fg-light">
+        <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
+        Todo en regla
+      </span>
     );
   }
 
   return (
-    <span className="flex items-center gap-3 text-xs">
+    <span className="flex items-center gap-1.5">
       {resumen.rojos > 0 && (
-        <span className="flex items-baseline gap-1.5">
-          <span className="font-medium tabular-nums text-destructive">
-            {resumen.rojos}
-          </span>
-          <span className="text-fg-lighter">urgentes</span>
-        </span>
+        <Distintivo
+          n={resumen.rojos}
+          palabra={resumen.rojos === 1 ? "urgente" : "urgentes"}
+          clases="border-destructive/25 bg-destructive/12 text-destructive"
+        />
       )}
       {resumen.ambar > 0 && (
-        <span className="flex items-baseline gap-1.5">
-          <span className="font-medium tabular-nums text-warning">
-            {resumen.ambar}
-          </span>
-          <span className="text-fg-lighter">a renovar</span>
-        </span>
+        <Distintivo
+          n={resumen.ambar}
+          palabra="a renovar"
+          clases="border-warning/25 bg-warning/12 text-warning"
+        />
       )}
+    </span>
+  );
+}
+
+/**
+ * El número va en un distintivo con fondo, no en texto suelto.
+ *
+ * Antes era texto gris del mismo tamaño que todo lo demás y se perdía: decía
+ * "1 urgentes" en la esquina y no lo veía nadie. Es EL dato por el que se abre
+ * esta aplicación, así que tiene que ganarle en peso visual al resto de la
+ * cabecera. El número más grande y en cifras tabulares, el fondo tintado con
+ * el color del semáforo, y la palabra pequeña detrás.
+ */
+function Distintivo({
+  n,
+  palabra,
+  clases,
+}: {
+  n: number;
+  palabra: string;
+  clases: string;
+}) {
+  return (
+    <span
+      className={`flex items-baseline gap-1 rounded-full border px-2.5 py-1 ${clases}`}
+    >
+      <span className="text-sm leading-none font-semibold tabular-nums">
+        {n}
+      </span>
+      <span className="text-[11px] leading-none font-medium opacity-80">
+        {palabra}
+      </span>
     </span>
   );
 }

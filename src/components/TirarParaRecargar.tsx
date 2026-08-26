@@ -3,26 +3,24 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
-const UMBRAL = 70; // cuánto hay que tirar para que cuente
-const TOPE = 110; // hasta dónde puede estirarse
-const RADIO = 8.5;
+const UMBRAL = 72; // cuánto hay que tirar para que cuente
+const TOPE = 120; // hasta dónde puede estirarse
+const RADIO = 7;
 const PERIMETRO = 2 * Math.PI * RADIO;
 
 /**
- * Tirar hacia abajo para recargar.
+ * Estado del gesto de tirar para recargar.
  *
- * En una web normal lo hace el navegador, pero en una PWA instalada —que es
- * como se usa esto— el gesto no existe: no hay barra que tirar. El usuario lo
- * intenta, no pasa nada, y concluye que la app está colgada.
+ * Se separa del dibujo porque quien tiene que moverse NO es solo el indicador:
+ * es el contenido. Una primera versión movía únicamente un círculo sobre una
+ * página quieta, y así el gesto no se lee — parece que ha aparecido un punto
+ * suelto. Lo que hace entender "estoy tirando de la página" es ver la página
+ * bajar con el dedo y el indicador salir del hueco que deja.
  *
- * El indicador es un aro que se va llenando conforme tirás, y al soltar pasa a
- * girar. Esa es la diferencia con un icono que solo aparece: el aro te dice
- * CUÁNTO te falta, así que sabés si ya podés soltar sin tener que adivinar.
- *
- * Sale de detrás de la cabecera, no encima. Un elemento que aparece flotando
- * sin venir de ningún sitio se lee como un pegote.
+ * Por eso el estado vive aquí y lo consume AppShell, que es quien puede mover
+ * las dos cosas a la vez.
  */
-export function TirarParaRecargar() {
+export function useTirarParaRecargar() {
   const router = useRouter();
   const [tirando, setTirando] = useState(0);
   const [recargando, startTransition] = useTransition();
@@ -48,9 +46,8 @@ export function TirarParaRecargar() {
         return;
       }
 
-      // Resistencia creciente: al principio sigue al dedo, y cuanto más lejos
-      // más cuesta. Es lo que da la sensación de goma en vez de la de arrastrar
-      // una caja.
+      // Resistencia creciente: al principio sigue al dedo y cuanto más lejos,
+      // más cuesta. Es lo que da sensación de goma y no de arrastrar una caja.
       const resistido = TOPE * (1 - Math.exp(-delta / TOPE));
       tirandoRef.current = resistido;
       setTirando(resistido);
@@ -61,7 +58,7 @@ export function TirarParaRecargar() {
 
       if (tirandoRef.current >= UMBRAL) {
         // router.refresh() no devuelve promesa; la transición sí sabe cuándo
-        // termina, así que el aro gira hasta que llegan los datos de verdad.
+        // termina, así que el indicador se queda hasta que llegan los datos.
         startTransition(() => router.refresh());
       }
 
@@ -70,8 +67,6 @@ export function TirarParaRecargar() {
       setTirando(0);
     }
 
-    // passive: no llamamos a preventDefault, así el navegador desplaza sin
-    // esperar a nuestro código.
     const opciones = { passive: true } as const;
     document.addEventListener("touchstart", alEmpezar, opciones);
     document.addEventListener("touchmove", alMover, opciones);
@@ -86,72 +81,96 @@ export function TirarParaRecargar() {
     };
   }, [router]);
 
-  const activo = tirando > 0 || recargando;
+  const progreso = Math.min(tirando / UMBRAL, 1);
+
+  return {
+    /** Píxeles que hay que bajar el contenido. */
+    desplazamiento: recargando ? 56 : tirando,
+    progreso,
+    recargando,
+    activo: tirando > 0 || recargando,
+  };
+}
+
+/**
+ * El indicador.
+ *
+ * Es una pastilla con aro y TEXTO, no un icono suelto. El texto es lo que
+ * quita toda duda: un aro girando puede ser cualquier cosa, "Actualizando…"
+ * no. Y va cambiando —tirá / soltá / actualizando— así que el usuario sabe en
+ * todo momento qué falta para que pase algo.
+ */
+export function IndicadorRecarga({
+  progreso,
+  recargando,
+  activo,
+  desplazamiento,
+}: {
+  progreso: number;
+  recargando: boolean;
+  activo: boolean;
+  desplazamiento: number;
+}) {
   if (!activo) return null;
 
-  const progreso = Math.min(tirando / UMBRAL, 1);
   const listo = progreso >= 1;
-
-  // Mientras se tira, el aro sale de detrás de la cabecera. Al soltar se queda
-  // a una altura fija hasta que termina.
-  const desplazamiento = recargando ? 56 : 8 + tirando * 0.6;
+  const texto = recargando
+    ? "Actualizando…"
+    : listo
+      ? "Soltá para actualizar"
+      : "Tirá para actualizar";
 
   return (
     <div
-      aria-hidden
-      className="pointer-events-none fixed inset-x-0 top-0 z-10 flex justify-center md:hidden"
+      aria-live="polite"
+      className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center md:hidden"
       style={{
-        transform: `translate3d(0, ${desplazamiento}px, 0)`,
-        transition: recargando ? "transform 260ms cubic-bezier(0.16,1,0.3,1)" : "none",
+        // Se coloca centrado dentro del hueco que abre el contenido al bajar.
+        transform: `translate3d(0, ${Math.max(desplazamiento / 2 - 16, 4)}px, 0)`,
+        transition: recargando
+          ? "transform 260ms cubic-bezier(0.16,1,0.3,1)"
+          : "none",
+        opacity: recargando ? 1 : Math.min(progreso * 1.8, 1),
       }}
     >
-      <span
-        className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-100 shadow-[0_2px_10px_rgba(0,0,0,0.10)] ring-1 ring-black/5 dark:shadow-[0_2px_10px_rgba(0,0,0,0.4)] dark:ring-white/10"
-        style={{
-          // Aparece creciendo, no de golpe.
-          transform: `scale(${recargando ? 1 : 0.55 + progreso * 0.45})`,
-          opacity: recargando ? 1 : Math.min(progreso * 1.6, 1),
-          transition: recargando ? "transform 260ms ease-out" : "none",
-        }}
-      >
+      <span className="flex items-center gap-2 rounded-full border border-black/5 bg-surface-100/90 py-1.5 pr-3.5 pl-2.5 text-xs font-medium text-fg-light shadow-[0_4px_16px_rgba(0,0,0,0.12)] backdrop-blur-xl dark:border-white/10 dark:shadow-[0_4px_16px_rgba(0,0,0,0.45)]">
         <svg
           viewBox="0 0 24 24"
-          className={`h-5 w-5 ${recargando ? "animate-spin" : ""}`}
+          className={`h-4 w-4 shrink-0 ${recargando ? "animate-spin" : ""}`}
           style={{
-            // Mientras se tira, el aro gira despacio siguiendo el dedo.
-            transform: recargando ? undefined : `rotate(${progreso * 270}deg)`,
+            transform: recargando ? undefined : `rotate(${progreso * 180}deg)`,
+            transition: "transform 80ms linear",
           }}
         >
-          {/* Surco de fondo: da referencia de cuánto falta. */}
           <circle
             cx="12"
             cy="12"
             r={RADIO}
             fill="none"
             stroke="currentColor"
-            strokeWidth="2.25"
+            strokeWidth="2.5"
             className="text-fg-lighter/25"
           />
-          {/* Aro de progreso. Al recargar se queda en un cuarto y gira. */}
           <circle
             cx="12"
             cy="12"
             r={RADIO}
             fill="none"
             stroke="currentColor"
-            strokeWidth="2.25"
+            strokeWidth="2.5"
             strokeLinecap="round"
             strokeDasharray={PERIMETRO}
             strokeDashoffset={
-              recargando ? PERIMETRO * 0.72 : PERIMETRO * (1 - progreso)
+              recargando ? PERIMETRO * 0.7 : PERIMETRO * (1 - progreso)
             }
             transform="rotate(-90 12 12)"
-            className={
-              listo || recargando ? "text-brand" : "text-fg-light"
-            }
+            className={listo || recargando ? "text-brand" : "text-fg-light"}
             style={{ transition: "stroke-dashoffset 80ms linear" }}
           />
         </svg>
+        <span className={listo || recargando ? "text-brand-600" : undefined}>
+          {texto}
+        </span>
       </span>
     </div>
   );

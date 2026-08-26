@@ -7,7 +7,10 @@ import {
   NavegacionEscritorio,
   Contadores,
 } from "@/components/Navegacion";
-import { TirarParaRecargar } from "@/components/TirarParaRecargar";
+import {
+  useTirarParaRecargar,
+  IndicadorRecarga,
+} from "@/components/TirarParaRecargar";
 
 export type Resumen = { rojos: number; ambar: number };
 
@@ -37,6 +40,8 @@ export function AppShell({
   acciones?: React.ReactNode;
   children: React.ReactNode;
 }) {
+  const tirar = useTirarParaRecargar();
+
   return (
     <div className="flex min-h-dvh flex-col">
       {/* ---- Barra superior, solo escritorio ---- */}
@@ -65,11 +70,28 @@ export function AppShell({
             </div>
           </header>
 
-          <main className="flex-1">{children}</main>
+          {/* El contenido baja con el dedo. Esto es lo que hace que el gesto
+              se entienda: sin ello el indicador parece un elemento suelto que
+              apareció por su cuenta. */}
+          <div className="relative flex-1">
+            <IndicadorRecarga {...tirar} />
+            <main
+              className="h-full"
+              style={{
+                transform: `translate3d(0, ${tirar.desplazamiento}px, 0)`,
+                transition: tirar.recargando
+                  ? "transform 260ms cubic-bezier(0.16,1,0.3,1)"
+                  : tirar.activo
+                    ? "none"
+                    : "transform 320ms cubic-bezier(0.16,1,0.3,1)",
+              }}
+            >
+              {children}
+            </main>
+          </div>
         </div>
       </div>
 
-      <TirarParaRecargar />
       <NavegacionMovil />
     </div>
   );
