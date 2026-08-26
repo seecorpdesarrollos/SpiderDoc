@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { DOCUMENT_TYPES, documentTypeLabel } from "@/lib/constants";
 import { formatExpiryDate, getExpiryStatus } from "@/lib/expiry";
+import { comprimirImagen, formatearBytes } from "@/lib/imagen";
 import type { ExtractionResult } from "@/lib/types";
 
 type Step = "pick" | "scanning" | "review" | "saving";
@@ -33,17 +34,29 @@ export function UploadDialog({
    * uno español no se renuevan igual — así que se guarda con el documento.
    */
   const [pais, setPais] = useState<string | null>(null);
+  /** Cuánto pesaba la foto y cuánto pesa ya, si se pudo aligerar. */
+  const [peso, setPeso] = useState<{ antes: number; despues: number } | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  async function handleFile(selected: File) {
-    setFile(selected);
+  async function handleFile(original: File) {
     setError(null);
     setScanNote(null);
+    setPeso(null);
+    setStep("scanning");
+
+    // Se aligera ANTES de analizar, no solo antes de guardar: así la versión
+    // liviana es también la que viaja al OCR, y el análisis tarda menos y
+    // consume menos.
+    const { archivo: selected, bytesAntes, bytesDespues, comprimida } =
+      await comprimirImagen(original);
+
+    if (comprimida) setPeso({ antes: bytesAntes, despues: bytesDespues });
+
+    setFile(selected);
     setPreview(
       selected.type.startsWith("image/") ? URL.createObjectURL(selected) : null,
     );
-    setStep("scanning");
 
     const formData = new FormData();
     formData.append("file", selected);
@@ -214,6 +227,16 @@ export function UploadDialog({
               {scanNote && (
                 <p className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2.5 text-sm text-warning">
                   {scanNote}
+                </p>
+              )}
+
+              {/* Se dice, no se esconde: el usuario eligió una foto y la que
+                  se guarda es otra. Además tranquiliza sobre lo que ocupa. */}
+              {peso && (
+                <p className="text-xs text-fg-lighter">
+                  Foto optimizada: {formatearBytes(peso.antes)} →{" "}
+                  <span className="text-fg-light">{formatearBytes(peso.despues)}</span>.
+                  Se sube más rápido y se lee igual de bien.
                 </p>
               )}
 
