@@ -10,6 +10,7 @@ import {
 import { CompartirApp } from "@/components/CompartirApp";
 import { AppShell } from "@/components/AppShell";
 import { ComoInstalar } from "@/components/ComoInstalar";
+import { ProbarAviso } from "@/components/ProbarAviso";
 import { BorrarCuenta } from "@/components/BorrarCuenta";
 
 /** Opciones de antelación. Ver el porqué de cada una en el texto de ayuda. */
@@ -124,6 +125,13 @@ export function AjustesClient({
         {guardado && !error && (
           <p className="mt-3 text-sm text-brand-600">Guardado.</p>
         )}
+
+        <div className="mt-5 border-t border-border pt-5">
+          <p className="mb-3 text-sm leading-relaxed text-fg-light">
+            ¿Querés ver cómo se ve un aviso antes de necesitarlo?
+          </p>
+          <ProbarAviso />
+        </div>
       </section>
 
       {/* ---- Formato de las fechas ---- */}

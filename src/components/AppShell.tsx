@@ -3,6 +3,7 @@
 import { Wordmark } from "@/components/Wordmark";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { NavegacionMovil, NavegacionEscritorio, Contadores } from "@/components/Navegacion";
+import { TirarParaRecargar } from "@/components/TirarParaRecargar";
 
 /**
  * Esqueleto de la parte con sesión iniciada.
@@ -42,6 +43,7 @@ export function AppShell({
         <main className="flex-1">{children}</main>
       </div>
 
+      <TirarParaRecargar />
       <NavegacionMovil />
     </div>
   );

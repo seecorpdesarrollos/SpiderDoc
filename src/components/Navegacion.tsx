@@ -175,7 +175,15 @@ export function NavegacionEscritorio({
         <ThemeToggle />
       </div>
 
-      <nav aria-label="Navegación principal" className="flex-1 px-3">
+      {/* El estado va arriba, no abajo: es el dato por el que uno abre esta
+          aplicación, y abajo del todo se lee como si fuera pie de página. */}
+      {resumen && (
+        <div className="hairline-b px-5 pb-4">
+          <Contadores resumen={resumen} />
+        </div>
+      )}
+
+      <nav aria-label="Navegación principal" className="flex-1 px-3 pt-3">
         <ul className="space-y-1">
           {DESTINOS.map((destino) => {
             const activo = pathname.startsWith(destino.href);
@@ -199,13 +207,6 @@ export function NavegacionEscritorio({
           })}
         </ul>
       </nav>
-
-      {resumen && (
-        <div className="hairline-t px-5 py-4">
-          <p className="heading-meta mb-2 text-fg-lighter">Tus documentos</p>
-          <Contadores resumen={resumen} />
-        </div>
-      )}
 
       <div className="hairline-t px-5 py-4">
         <p className="truncate text-xs text-fg-lighter" title={email}>
