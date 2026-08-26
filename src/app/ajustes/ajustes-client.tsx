@@ -74,14 +74,20 @@ export function AjustesClient({
 
   return (
     <AppShell email={email}>
-    <div className="mx-auto w-full max-w-2xl px-6 py-8 pb-28">
+    <div className="mx-auto w-full max-w-5xl px-6 py-8 pb-28">
       <h1 className="font-heading text-2xl font-medium tracking-tight text-foreground">
         Ajustes
       </h1>
       <p className="mt-1 text-sm text-fg-light">{email}</p>
 
+      {/* Dos columnas en pantalla ancha. Las secciones son independientes
+          entre sí, así que no importa el orden de lectura: cada una se
+          entiende sola. items-start evita que una sección alta estire a la de
+          al lado. */}
+      <div className="mt-8 grid gap-4 lg:grid-cols-2 lg:items-start">
+
       {/* ---- Antelación de los avisos ---- */}
-      <section className="card-surface mt-8 p-5">
+      <section className="card-surface p-5">
         <p className="heading-meta text-brand-600">Avisos</p>
         <h2 className="mt-3 font-heading text-base font-semibold text-foreground">
           Con cuánta antelación querés que te avisemos
@@ -135,7 +141,7 @@ export function AjustesClient({
       </section>
 
       {/* ---- Formato de las fechas ---- */}
-      <section className="card-surface mt-4 p-5">
+      <section className="card-surface p-5">
         <p className="heading-meta text-brand-600">Visualización</p>
         <h2 className="mt-3 font-heading text-base font-semibold text-foreground">
           Cómo querés ver las caducidades
@@ -186,7 +192,7 @@ export function AjustesClient({
       </section>
 
       {/* ---- Instalar ---- */}
-      <section className="card-surface mt-4 p-5">
+      <section className="card-surface p-5">
         <p className="heading-meta text-brand-600">Instalar</p>
         <h2 className="mt-3 font-heading text-base font-semibold text-foreground">
           Tenela como una app más
@@ -198,7 +204,7 @@ export function AjustesClient({
       </section>
 
       {/* ---- Compartir ---- */}
-      <section className="card-surface mt-4 p-5">
+      <section className="card-surface p-5">
         <p className="heading-meta text-brand-600">Compartir</p>
         <h2 className="mt-3 font-heading text-base font-semibold text-foreground">
           Pasale la app a alguien
@@ -213,7 +219,7 @@ export function AjustesClient({
       </section>
 
       {/* ---- Cuenta ---- */}
-      <section className="card-surface mt-4 p-5">
+      <section className="card-surface p-5">
         <p className="heading-meta text-brand-600">Cuenta</p>
         <form action="/auth/signout" method="post" className="mt-4 md:hidden">
           <button type="submit" className="btn-default px-4 py-2.5 text-sm">
@@ -224,6 +230,7 @@ export function AjustesClient({
           <BorrarCuenta />
         </div>
       </section>
+      </div>
     </div>
     </AppShell>
   );

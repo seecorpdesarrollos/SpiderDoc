@@ -87,10 +87,32 @@ export function DashboardClient({
   }
 
   return (
-    <AppShell email={email} resumen={{ rojos: summary.red, ambar: summary.amber }}>
-      <div className="mx-auto max-w-3xl px-6 py-8 pb-28">
-        <section className="card-surface">
-
+    <AppShell
+      email={email}
+      resumen={{ rojos: summary.red, ambar: summary.amber }}
+      acciones={
+        <div className="flex items-center gap-4">
+          <span className="text-xs text-fg-lighter">
+            <span className="font-medium tabular-nums text-foreground">
+              {used}
+            </span>
+            /{limit}{" "}
+            {atLimit ? "· plan completo" : "en el plan gratuito"}
+          </span>
+          <button
+            type="button"
+            onClick={handleAdd}
+            className="btn-primary px-3 py-1.5 text-xs"
+          >
+            + Añadir documento
+          </button>
+        </div>
+      }
+    >
+      <div className="mx-auto max-w-5xl px-6 py-8 pb-28">
+        {/* En móvil no hay barra superior de escritorio, así que el contador y
+            el botón de añadir viven aquí. En escritorio suben a la barra. */}
+        <section className="card-surface md:hidden">
           <div className="flex flex-wrap items-end justify-between gap-4 p-4">
             <div>
               <p className="font-heading text-3xl font-medium tabular-nums text-foreground">
@@ -120,11 +142,20 @@ export function DashboardClient({
           </p>
         )}
 
-        <section className="mt-6">
+        <section className="mt-6 md:mt-0">
           {documents.length === 0 ? (
             <EmptyState onAdd={handleAdd} />
           ) : (
-            <ul className="space-y-2">
+            <ul
+              /* Dos columnas a partir de tablet. En una pantalla ancha una
+                 tarjeta por fila deja media pantalla vacía y obliga a
+                 desplazar por gusto.
+
+                 items-start es lo que evita que una tarjeta en modo edición
+                 —que crece— estire a la de al lado. auto-rows-min hace lo
+                 mismo con las filas. */
+              className="grid gap-2 md:grid-cols-2 md:items-start md:auto-rows-min"
+            >
               {documents.map((doc, i) => (
                 <DocumentCard
                   key={doc.id}

@@ -3,8 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLinkStatus } from "next/link";
-import { Wordmark } from "@/components/Wordmark";
-import { ThemeToggle } from "@/components/ThemeToggle";
 
 /**
  * Navegación de la aplicación.
@@ -159,31 +157,12 @@ export function NavegacionMovil() {
   );
 }
 
-export function NavegacionEscritorio({
-  email,
-  resumen,
-}: {
-  email: string;
-  resumen?: { rojos: number; ambar: number };
-}) {
+export function NavegacionEscritorio({ email }: { email: string }) {
   const pathname = usePathname();
 
   return (
-    <aside className="hairline-r sticky top-0 hidden h-dvh w-60 shrink-0 flex-col bg-surface-100 md:flex">
-      <div className="flex items-center justify-between px-5 py-4">
-        <Wordmark />
-        <ThemeToggle />
-      </div>
-
-      {/* El estado va arriba, no abajo: es el dato por el que uno abre esta
-          aplicación, y abajo del todo se lee como si fuera pie de página. */}
-      {resumen && (
-        <div className="hairline-b px-5 pb-4">
-          <Contadores resumen={resumen} />
-        </div>
-      )}
-
-      <nav aria-label="Navegación principal" className="flex-1 px-3 pt-3">
+    <aside className="hairline-r hidden w-60 shrink-0 flex-col bg-surface-100 md:flex">
+      <nav aria-label="Navegación principal" className="flex-1 px-3 pt-4">
         <ul className="space-y-1">
           {DESTINOS.map((destino) => {
             const activo = pathname.startsWith(destino.href);
