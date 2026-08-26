@@ -29,10 +29,16 @@ import { formatExpiryDate } from "@/lib/expiry";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-/** El título del push, corto: en la pantalla de bloqueo no cabe más. */
-function asuntoPush(milestone: number): string {
-  if (milestone <= 1) return "Último aviso";
-  if (milestone <= 3) return "Se te cierra la ventana";
+/**
+ * El título del push, corto: en la pantalla de bloqueo no cabe más.
+ *
+ * Por días y no por escalón, por el mismo motivo que el texto del correo: con
+ * antelaciones distintas de 6 meses, el número del escalón deja de decir
+ * cuánto tiempo queda de verdad.
+ */
+function asuntoPush(daysLeft: number): string {
+  if (daysLeft <= 35) return "Último aviso";
+  if (daysLeft <= 100) return "Se te cierra la ventana";
   return "Ya podés renovarlo";
 }
 
@@ -127,7 +133,7 @@ export async function GET(request: NextRequest) {
         auth: string;
       }[]) {
         const resultadoPush = await enviarPush(destino, {
-          titulo: asuntoPush(aviso.milestone),
+          titulo: asuntoPush(aviso.days_left),
           cuerpo: `${aviso.title} caduca el ${formatExpiryDate(aviso.expiry_date)}.`,
           url: "/dashboard",
           // Un aviso por documento: si llega otro del mismo, reemplaza al

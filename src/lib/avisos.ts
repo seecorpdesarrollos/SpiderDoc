@@ -12,20 +12,23 @@ export type AvisoPendiente = {
 };
 
 /**
- * El texto cambia según el escalón, y no es cosmético: en cada momento hay
- * algo distinto que hacer.
+ * El texto se elige por los DÍAS QUE QUEDAN, no por el número del escalón.
  *
- *   6 meses  la ventana ACABA de abrirse. El consulado italiano no acepta la
- *            renovación del pasaporte antes. Es el aviso que da valor al
- *            producto, porque nadie más te lo da.
- *   3 meses  la ventana se está cerrando. El consulado argentino tarda ~90
- *            días en entregar: a partir de aquí ya vas justo.
- *   1 mes    último aviso. Casi seguro que no llegás a renovarlo a tiempo, así
- *            que lo útil es decirlo claro en vez de fingir que todavía hay
- *            margen.
+ * Antes iba por escalón: 1 → último aviso, 3 → se cierra, el resto → se abre
+ * la ventana. Con la antelación por defecto de 6 meses cuadraba, porque los
+ * escalones eran 6, 3 y 1.
+ *
+ * Pero la antelación la elige el usuario. Con 9 meses los escalones pasan a
+ * ser 9, 4 y 1, y a un documento con 63 días por delante le tocaba el texto
+ * del escalón 4 — o sea «todavía falta bastante, este es el primer día en que
+ * podés hacer algo». Con dos meses de margen eso no es un matiz, es mentira.
+ *
+ * Los días son lo que de verdad importa, porque los plazos de los consulados
+ * son absolutos: el argentino tarda unos noventa días tenga el usuario la
+ * antelación que tenga.
  */
-function tono(milestone: number, daysLeft: number) {
-  if (milestone <= 1) {
+function tono(daysLeft: number) {
+  if (daysLeft <= 35) {
     return {
       asunto: "Último aviso",
       titular: "Ya casi no queda margen",
@@ -35,7 +38,8 @@ function tono(milestone: number, daysLeft: number) {
         `Miralo hoy: en algunos casos se puede pedir un justificante o una prórroga.`,
     };
   }
-  if (milestone <= 3) {
+
+  if (daysLeft <= 100) {
     return {
       asunto: "Se te cierra la ventana",
       titular: "Quedan menos de tres meses",
@@ -45,6 +49,7 @@ function tono(milestone: number, daysLeft: number) {
         `Si no empezaste el trámite, esta semana es el momento.`,
     };
   }
+
   return {
     asunto: "Ya podés renovarlo",
     titular: "Se abre la ventana para renovar",
@@ -71,7 +76,7 @@ function esc(value: string): string {
 }
 
 export function asuntoAviso(aviso: AvisoPendiente): string {
-  const t = tono(aviso.milestone, aviso.days_left);
+  const t = tono(aviso.days_left);
   return `${t.asunto}: ${aviso.title} caduca el ${formatExpiryDate(aviso.expiry_date)}`;
 }
 
@@ -81,7 +86,7 @@ export function asuntoAviso(aviso: AvisoPendiente): string {
  * estilo y las tablas anidadas se rompen al pasar por editores intermedios.
  */
 export function cuerpoAviso(aviso: AvisoPendiente, appUrl: string): string {
-  const t = tono(aviso.milestone, aviso.days_left);
+  const t = tono(aviso.days_left);
   const titulo = esc(aviso.title);
   const fecha = formatExpiryDate(aviso.expiry_date);
 
