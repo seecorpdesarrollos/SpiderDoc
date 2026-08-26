@@ -33,10 +33,15 @@ const DESTINOS = [
   {
     href: "/ajustes",
     etiqueta: "Ajustes",
+    // Controles deslizantes, no el engranaje clásico: el engranaje que había
+    // era un círculo con rayos y se leía igual que el sol del botón de tema.
+    // Dos iconos idénticos con significados distintos, uno al lado del otro.
     icono: (
       <>
-        <circle cx="12" cy="12" r="3" />
-        <path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" />
+        <path d="M4 7h10M18 7h2M4 12h4M12 12h8M4 17h10M18 17h2" />
+        <circle cx="16" cy="7" r="2" />
+        <circle cx="10" cy="12" r="2" />
+        <circle cx="16" cy="17" r="2" />
       </>
     ),
   },
@@ -128,12 +133,18 @@ export function NavegacionMovil() {
   return (
     <nav
       aria-label="Navegación principal"
-      /* pb-[env(safe-area-inset-bottom)]: en los iPhone sin botón de inicio
-         hay una franja de gestos abajo. Sin esto, la barra queda debajo de
-         ella y el último milímetro no se puede tocar. */
-      className="hairline-t fixed inset-x-0 bottom-0 z-30 bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
+      /* Barra flotante y redondeada, como las apps de iOS de ahora, en vez de
+         una franja pegada al borde inferior.
+ 
+         No es solo estética: al despegarse del borde, el contenido se ve
+         correr por debajo y la app deja de parecer dos bloques apilados.
+ 
+         pb con safe-area-inset-bottom: en los iPhone sin botón de inicio hay
+         una franja de gestos abajo. Sin ese hueco, la barra se le monta encima
+         y el último milímetro no responde al dedo. */
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-30 px-4 pb-[calc(10px+env(safe-area-inset-bottom))] md:hidden"
     >
-      <ul className="flex">
+      <ul className="pointer-events-auto mx-auto flex max-w-xs gap-1 rounded-[22px] border border-black/5 bg-surface-100/85 p-1.5 shadow-[0_6px_24px_rgba(0,0,0,0.14)] backdrop-blur-xl dark:border-white/10 dark:shadow-[0_6px_24px_rgba(0,0,0,0.5)]">
         {DESTINOS.map((destino) => {
           const activo = pathname.startsWith(destino.href);
           return (
@@ -141,8 +152,12 @@ export function NavegacionMovil() {
               <Link
                 href={destino.href}
                 aria-current={activo ? "page" : undefined}
-                className={`focus-ring relative flex min-h-[56px] flex-col items-center justify-center gap-1 text-[11px] font-medium transition-colors active:bg-surface-200 ${
-                  activo ? "text-brand-600" : "text-fg-lighter"
+                /* min-h 48: por debajo de 44 se empiezan a fallar los toques,
+                   y aquí hay margen porque el dedo llega en diagonal. */
+                className={`focus-ring relative flex min-h-12 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-[16px] text-[11px] font-medium transition-colors ${
+                  activo
+                    ? "bg-brand/12 text-brand-600"
+                    : "text-fg-lighter active:bg-surface-200"
                 }`}
               >
                 <Pendiente />
